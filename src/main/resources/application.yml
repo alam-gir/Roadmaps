@@ -1,0 +1,15 @@
+spring:
+  application:
+    name: Roadmaps
+  datasource:
+    url: jdbc:postgresql://${PGSQL_SERVICE_HOST}:${PGSQL_SERVICE_PORT}/${PGSQL_SERVICE_DB}
+    username: ${PGSQL_SERVICE_USERNAME}
+    password: ${PGSQL_SERVICE_PASSWORD}
+    driver-class-name: org.postgresql.Driver
+  jpa:
+    properties:
+      hibernate:
+        dialect: org.hibernate.dialect.PostgreSQLDialect
+    hibernate:
+      ddl-auto: update
+    show-sql: true
