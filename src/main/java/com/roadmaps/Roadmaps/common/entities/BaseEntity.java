@@ -15,4 +15,6 @@ public class BaseEntity {
     @GeneratedValue(strategy = GenerationType.UUID)
     @Column(columnDefinition = "UUID")
     private UUID id;
+
+    protected BaseEntity() { super();}
 }
