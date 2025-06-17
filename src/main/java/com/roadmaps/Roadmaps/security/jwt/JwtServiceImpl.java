@@ -64,7 +64,7 @@ public class JwtServiceImpl implements JwtService {
             Claims claims = parseToken(token);
             String tokenType = claims.get("tokenType", String.class);
 
-            return tokenType.equals("access") && isTokenExpired(token);
+            return tokenType.equals("access") && !isTokenExpired(token);
         } catch (ExpiredJwtException ex){
             log.debug("Access token expired. {}", ex.getMessage());
             return false;
