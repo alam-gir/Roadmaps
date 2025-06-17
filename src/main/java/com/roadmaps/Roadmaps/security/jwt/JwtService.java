@@ -1,0 +1,16 @@
+package com.roadmaps.Roadmaps.security.jwt;
+
+import com.roadmaps.Roadmaps.security.UserPrinciple;
+import org.springframework.security.core.userdetails.UserDetails;
+import org.springframework.stereotype.Service;
+
+import java.util.Date;
+
+@Service
+public interface JwtService {
+    String generateAccessToken(UserPrinciple userPrinciple);
+    String extractUsername(String token);
+    boolean validateToken(String token);
+    boolean isTokenValid(String token);
+    boolean isTokenValid(String token, UserDetails userDetails);
+}
