@@ -10,6 +10,7 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.validation.annotation.Validated;
+import org.springframework.web.bind.annotation.ModelAttribute;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
@@ -23,7 +24,7 @@ public class AuthController {
 
     @PostMapping("login")
     public ResponseEntity<?> loginWithEmailAndPassword(
-            HttpServletResponse response, @Valid LoginRequestDto loginDto
+            HttpServletResponse response, @Valid @ModelAttribute LoginRequestDto loginDto
     ) {
         ApiResponse<?> loginResponse = authService.login(response, loginDto);
         return ResponseEntity.ok(loginResponse);
@@ -31,11 +32,10 @@ public class AuthController {
 
     @PostMapping("sign-up")
     public ResponseEntity<?> signUpWithEmailAndPassword(
-            @Valid SignupRequestDto  signupDto
+            @Valid @ModelAttribute SignupRequestDto  signupDto
     ) {
         ApiResponse<?> signupResponse = authService.signup(signupDto);
 
         return ResponseEntity.status(HttpStatus.CREATED).body(signupResponse);
     }
-
 }

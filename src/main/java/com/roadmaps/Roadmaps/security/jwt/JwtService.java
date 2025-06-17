@@ -2,7 +2,6 @@ package com.roadmaps.Roadmaps.security.jwt;
 
 import com.roadmaps.Roadmaps.security.UserPrinciple;
 import org.springframework.security.core.userdetails.UserDetails;
-import org.springframework.stereotype.Service;
 
 public interface JwtService {
     String generateAccessToken(UserPrinciple userPrinciple);

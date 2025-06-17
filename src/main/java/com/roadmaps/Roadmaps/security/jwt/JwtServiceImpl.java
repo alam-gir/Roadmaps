@@ -40,7 +40,7 @@ public class JwtServiceImpl implements JwtService {
                 .claim("tokenType", "access")
                 .issuedAt(Date.from(now))
                 .expiration(Date.from(exp))
-                .signWith(getSignKey(), Jwts.SIG.HS512)
+                .signWith(getSignKey(), Jwts.SIG.HS256)
                 .compact();
     }
 

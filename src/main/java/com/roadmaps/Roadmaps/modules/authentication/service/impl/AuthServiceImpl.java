@@ -1,5 +1,6 @@
 package com.roadmaps.Roadmaps.modules.authentication.service.impl;
 
+import com.roadmaps.Roadmaps.common.exceptions.InvalidEmailPasswordException;
 import com.roadmaps.Roadmaps.common.utils.ApiResponse;
 import com.roadmaps.Roadmaps.common.utils.CookieUtils;
 import com.roadmaps.Roadmaps.modules.authentication.dtos.request.LoginRequestDto;
@@ -15,7 +16,10 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
+import org.springframework.security.core.AuthenticationException;
+import org.springframework.stereotype.Service;
 
+@Service
 @Slf4j
 @RequiredArgsConstructor
 public class AuthServiceImpl implements AuthService {
@@ -34,24 +38,29 @@ public class AuthServiceImpl implements AuthService {
 
     @Override
     public ApiResponse<?> login(HttpServletResponse response, LoginRequestDto loginDto) {
-        Authentication auth = authenticationManager.authenticate(
-                new UsernamePasswordAuthenticationToken(
-                        loginDto.getEmail(),
-                        loginDto.getPassword()
-                )
-        );
+        try {
+            Authentication auth = authenticationManager.authenticate(
+                    new UsernamePasswordAuthenticationToken(
+                            loginDto.getEmail(),
+                            loginDto.getPassword()
+                    )
+            );
 
-        UserPrinciple userPrinciple = (UserPrinciple) auth.getPrincipal();
+            UserPrinciple userPrinciple = (UserPrinciple) auth.getPrincipal();
 
-        String accessToken = jwtService.generateAccessToken(userPrinciple);
+            String accessToken = jwtService.generateAccessToken(userPrinciple);
 
-        CookieUtils.addCookie(
-                response,
-                "accessToken",
-                accessToken,
-                (int) (accessTokenExpirationInMillis / 1000)
-        );
+            CookieUtils.addCookie(
+                    response,
+                    "accessToken",
+                    accessToken,
+                    (int) (accessTokenExpirationInMillis / 1000)
+            );
 
-        return ApiResponse.success(null, "Login successful.");
+            return ApiResponse.success(null, "Login successful.");
+        } catch (AuthenticationException ex) {
+            log.warn("Authenticateion Exception when login : {}", ex.getMessage());
+            throw new InvalidEmailPasswordException();
+        }
     }
 }

@@ -3,7 +3,6 @@ package com.roadmaps.Roadmaps.modules.user.service.impl;
 import com.roadmaps.Roadmaps.common.exceptions.ApiException;
 import com.roadmaps.Roadmaps.common.exceptions.DuplicateEmailException;
 import com.roadmaps.Roadmaps.common.exceptions.NotFoundException;
-import com.roadmaps.Roadmaps.modules.authentication.dtos.request.SignupRequestDto;
 import com.roadmaps.Roadmaps.modules.user.dtos.UserRequestDto;
 import com.roadmaps.Roadmaps.modules.user.enities.User;
 import com.roadmaps.Roadmaps.modules.user.mapper.UserMapper;
@@ -12,7 +11,9 @@ import com.roadmaps.Roadmaps.modules.user.service.UserService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.dao.DataIntegrityViolationException;
+import org.springframework.stereotype.Service;
 
+@Service
 @Slf4j
 @RequiredArgsConstructor
 public class UserServiceImpl implements UserService {
