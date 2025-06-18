@@ -26,4 +26,14 @@ public class User extends BaseEntity {
     @Enumerated(EnumType.STRING)
     @Builder.Default
     private ROLE role = ROLE.USER;
+
+    @OneToOne(cascade = CascadeType.ALL, fetch = FetchType.EAGER, orphanRemoval = true)
+    @JoinColumn(
+            name = "verification_token_id"
+    )
+    private EmailVerificationToken verificationToken;
+
+    @Column(nullable = false)
+    @Builder.Default
+    private boolean isEmailVerified =  false;
 }

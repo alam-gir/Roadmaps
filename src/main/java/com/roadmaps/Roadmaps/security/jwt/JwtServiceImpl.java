@@ -82,7 +82,7 @@ public class JwtServiceImpl implements JwtService {
             if(tokenBlacklistService.isTokenBlacklisted(token))
                 return false;
 
-            return isTokenExpired(token);
+            return !isTokenExpired(token);
         } catch (Exception e) {
             log.debug("Token validation failed. {}", e.getMessage());
             return false;
