@@ -15,3 +15,9 @@ REDIS_DATABASE=
 ## JWT--------------------------------------------
 JWT_SECRET=
 JWT_ACCESS_TOKEN_EXPIRATION=
+
+## MAIL -----------------------------------------
+MAIL_HOST=smtp.gmail.com
+MAIL_PORT=587
+MAIL_USERNAME= your gmail
+MAIL_PASSWORD= your gmail app password
