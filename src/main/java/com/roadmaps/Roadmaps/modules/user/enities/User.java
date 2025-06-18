@@ -32,4 +32,8 @@ public class User extends BaseEntity {
             name = "verification_token_id"
     )
     private EmailVerificationToken verificationToken;
+
+    @Column(nullable = false)
+    @Builder.Default
+    private boolean isEmailVerified =  false;
 }
