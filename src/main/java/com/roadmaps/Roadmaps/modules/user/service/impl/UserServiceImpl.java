@@ -39,9 +39,9 @@ public class UserServiceImpl implements UserService {
 
             userCacheService.setUserByEmail(email, user);
             return user;
-        } catch (DataIntegrityViolationException e) {
+        } catch (NotFoundException e) {
             log.warn("User not found with email {}", email);
-            throw new NotFoundException("User not found");
+            throw e;
         } catch (Exception e){
             log.warn("Error while getting user by email {}", email);
             throw new ApiException();
@@ -77,5 +77,18 @@ public class UserServiceImpl implements UserService {
             log.error("Error while generating emailVerificationToken", ex);
         }
         return null;
+    }
+
+    @Override
+    public User update(User user) {
+        try{
+            return userRepository.save(user);
+        } catch (DataIntegrityViolationException ex) {
+            log.error("Error while updating user", ex);
+            throw new DuplicateEmailException(user.getEmail());
+        } catch (Exception ex) {
+            log.error("Error while updating user", ex);
+            throw new ApiException("Failed to update user data!");
+        }
     }
 }
