@@ -39,7 +39,6 @@ public class AuthServiceImpl implements AuthService {
     private final UserService userService;
     private final JwtService jwtService;
     private final ApplicationEventPublisher eventPublisher;
-    private final UserCacheService userCacheService;
 
     @Value("${jwt.accessTokenExpiration:604800000}")
     long accessTokenExpirationInMillis;
@@ -125,6 +124,13 @@ public class AuthServiceImpl implements AuthService {
             log.error("Error while verifying email", ex);
             throw new ApiException("Invalid link!");
         }
+    }
+
+    @Override
+    public void getVerificationLink(UserPrinciple userPrinciple) {
+        User user = userService.getUserByEmail(userPrinciple.getEmail());
+        checkUserAlreadyVerified(user);
+        eventPublisher.publishEvent(new UserRegistrationEvent(this, user, frontendBaseUrl));
     }
 
     private void checkUserAlreadyVerified(User user) {
