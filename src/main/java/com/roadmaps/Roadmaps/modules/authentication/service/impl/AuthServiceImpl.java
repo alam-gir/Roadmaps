@@ -11,6 +11,7 @@ import com.roadmaps.Roadmaps.modules.authentication.dtos.request.SignupRequestDt
 import com.roadmaps.Roadmaps.modules.authentication.service.AuthService;
 import com.roadmaps.Roadmaps.modules.user.enities.EmailVerificationToken;
 import com.roadmaps.Roadmaps.modules.user.enities.User;
+import com.roadmaps.Roadmaps.modules.user.events.UserEmailVerifiedEvent;
 import com.roadmaps.Roadmaps.modules.user.events.UserRegistrationEvent;
 import com.roadmaps.Roadmaps.modules.user.service.UserService;
 import com.roadmaps.Roadmaps.security.UserPrinciple;
@@ -137,6 +138,9 @@ public class AuthServiceImpl implements AuthService {
             validateToken(user.getVerificationToken(), token);
 
             markUserVerified(user);
+
+            // publish event to sent welcaome email for verifying email.
+            eventPublisher.publishEvent(new UserEmailVerifiedEvent(this, user, frontendBaseUrl));
 
         } catch (NotFoundException ex) {
             log.warn(ex.getMessage());
