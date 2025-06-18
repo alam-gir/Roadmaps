@@ -30,4 +30,10 @@ public class UserCacheServiceImpl implements UserCacheService {
         String key = userCachePrefix + normalizedEmail;
         userRedisTemplate.opsForValue().set(key, user, ttl);
     }
+
+    public void removeUserByEmail(String email) {
+        String normalizedEmail = email.toLowerCase();
+        String key = userCachePrefix + normalizedEmail;
+        userRedisTemplate.delete(key);
+    }
 }
