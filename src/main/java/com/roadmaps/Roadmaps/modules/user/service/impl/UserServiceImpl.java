@@ -1,5 +1,6 @@
 package com.roadmaps.Roadmaps.modules.user.service.impl;
 
+import com.roadmaps.Roadmaps.cache.UserCacheService;
 import com.roadmaps.Roadmaps.common.exceptions.ApiException;
 import com.roadmaps.Roadmaps.common.exceptions.DuplicateEmailException;
 import com.roadmaps.Roadmaps.common.exceptions.NotFoundException;
@@ -18,12 +19,29 @@ import org.springframework.stereotype.Service;
 @RequiredArgsConstructor
 public class UserServiceImpl implements UserService {
     private final UserRepository userRepository;
+    private final UserCacheService userCacheService;
     private final UserMapper userMapper;
 
     @Override
     public User getUserByEmail(String email) {
-        return userRepository.findByEmailIgnoreCase(email)
-                .orElseThrow(() -> new NotFoundException("User not found by : " + email));
+        try{
+            User cachedUser = userCacheService.getUserByEmail(email);
+            if (cachedUser != null) {
+                return cachedUser;
+            }
+
+            User user = userRepository.findByEmailIgnoreCase(email)
+                    .orElseThrow(() -> new NotFoundException("User not found"));
+
+            userCacheService.setUserByEmail(email, user);
+            return user;
+        } catch (DataIntegrityViolationException e) {
+            log.warn("User not found with email {}", email);
+            throw new NotFoundException("User not found");
+        } catch (Exception e){
+            log.warn("Error while getting user by email {}", email);
+            throw new ApiException();
+        }
     }
 
     @Override
