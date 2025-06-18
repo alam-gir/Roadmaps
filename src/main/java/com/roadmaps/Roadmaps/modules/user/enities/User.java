@@ -27,7 +27,7 @@ public class User extends BaseEntity {
     @Builder.Default
     private ROLE role = ROLE.USER;
 
-    @OneToOne(cascade = CascadeType.ALL, fetch = FetchType.EAGER)
+    @OneToOne(cascade = CascadeType.ALL, fetch = FetchType.EAGER, orphanRemoval = true)
     @JoinColumn(
             name = "verification_token_id"
     )
