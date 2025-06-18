@@ -34,3 +34,5 @@ spring:
 jwt:
   secret:${JWT_SECRET}
   accessTokenExpiration:${JWT_ACCESS_TOKEN_EXPIRATION}
+
+frontendBaseUrl: ${FRONTEND_BASE_URL}
