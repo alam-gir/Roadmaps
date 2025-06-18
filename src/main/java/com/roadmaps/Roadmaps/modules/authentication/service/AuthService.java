@@ -8,4 +8,5 @@ import jakarta.servlet.http.HttpServletResponse;
 public interface AuthService {
     ApiResponse<?> signup(SignupRequestDto signupDto);
     ApiResponse<?> login(HttpServletResponse response, LoginRequestDto loginDto);
+    void verifyEmail(String email, String token);
 }

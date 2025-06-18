@@ -6,14 +6,12 @@ import com.roadmaps.Roadmaps.modules.authentication.dtos.request.SignupRequestDt
 import com.roadmaps.Roadmaps.modules.authentication.service.AuthService;
 import jakarta.servlet.http.HttpServletResponse;
 import jakarta.validation.Valid;
+import jakarta.validation.constraints.NotBlank;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.validation.annotation.Validated;
-import org.springframework.web.bind.annotation.ModelAttribute;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
 @RestController
 @RequestMapping("/v1/auth/")
@@ -37,5 +35,20 @@ public class AuthController {
         ApiResponse<?> signupResponse = authService.signup(signupDto);
 
         return ResponseEntity.status(HttpStatus.CREATED).body(signupResponse);
+    }
+
+    @GetMapping("/verify-email")
+    public ResponseEntity<ApiResponse<?>> verifyEmail(
+            @RequestParam("email") @NotBlank(message = "Invalid Link!") String email,
+            @RequestParam("token") @NotBlank(message = "Invalid link!") String token
+    ) {
+        authService.verifyEmail(email, token);
+
+        ApiResponse<?> apiResponse = ApiResponse.success(
+                null,
+                "Email verified successfully."
+        );
+
+        return ResponseEntity.ok(apiResponse);
     }
 }
