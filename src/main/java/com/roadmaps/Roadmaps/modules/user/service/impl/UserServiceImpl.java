@@ -9,6 +9,7 @@ import com.roadmaps.Roadmaps.modules.user.enities.User;
 import com.roadmaps.Roadmaps.modules.user.mapper.UserMapper;
 import com.roadmaps.Roadmaps.modules.user.repository.UserRepository;
 import com.roadmaps.Roadmaps.modules.user.service.UserService;
+import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.dao.DataIntegrityViolationException;
@@ -60,6 +61,7 @@ public class UserServiceImpl implements UserService {
     }
 
     @Override
+    @Transactional
     public User update(User user) {
         try{
             User updatedUser = userRepository.save(user);
