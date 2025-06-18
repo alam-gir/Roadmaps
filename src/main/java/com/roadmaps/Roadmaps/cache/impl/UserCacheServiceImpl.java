@@ -20,20 +20,34 @@ public class UserCacheServiceImpl implements UserCacheService {
 
     @Override
     public User getUserByEmail(String email) {
-        String normalizedEmail = email.toLowerCase();
-        String key = userCachePrefix + normalizedEmail;
-        return userRedisTemplate.opsForValue().get(key);
+        try{
+            String normalizedEmail = email.toLowerCase();
+            String key = userCachePrefix + normalizedEmail;
+            return userRedisTemplate.opsForValue().get(key);
+        } catch (Exception e) {
+            log.error("Error when getting user from redis cache : {}", email, e);
+        }
+        return null;
     }
 
     public void setUserByEmail(String email, User user) {
-        String normalizedEmail = email.toLowerCase();
-        String key = userCachePrefix + normalizedEmail;
-        userRedisTemplate.opsForValue().set(key, user, ttl);
+        try {
+            String normalizedEmail = email.toLowerCase();
+            String key = userCachePrefix + normalizedEmail;
+            userRedisTemplate.delete(key);
+            userRedisTemplate.opsForValue().set(key, user, ttl);
+        } catch (Exception e) {
+            log.error("Error when storing user to redis cache : {}", email, e);
+        }
     }
 
     public void removeUserByEmail(String email) {
-        String normalizedEmail = email.toLowerCase();
-        String key = userCachePrefix + normalizedEmail;
-        userRedisTemplate.delete(key);
+        try{
+            String normalizedEmail = email.toLowerCase();
+            String key = userCachePrefix + normalizedEmail;
+            userRedisTemplate.delete(key);
+        } catch (Exception e) {
+            log.error("Error when removing user from redis cache : {}", email, e);
+        }
     }
 }
