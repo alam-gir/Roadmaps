@@ -5,6 +5,7 @@ import com.roadmaps.Roadmaps.common.exceptions.ApiException;
 import com.roadmaps.Roadmaps.common.exceptions.DuplicateEmailException;
 import com.roadmaps.Roadmaps.common.exceptions.NotFoundException;
 import com.roadmaps.Roadmaps.modules.user.dtos.UserRequestDto;
+import com.roadmaps.Roadmaps.modules.user.enities.EmailVerificationToken;
 import com.roadmaps.Roadmaps.modules.user.enities.User;
 import com.roadmaps.Roadmaps.modules.user.mapper.UserMapper;
 import com.roadmaps.Roadmaps.modules.user.repository.UserRepository;
@@ -13,6 +14,9 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.stereotype.Service;
+
+import java.time.LocalDateTime;
+import java.util.UUID;
 
 @Service
 @Slf4j
@@ -56,5 +60,22 @@ public class UserServiceImpl implements UserService {
             log.error("Error while saving user", ex);
             throw new ApiException("Failed to create account!");
         }
+    }
+
+    @Override
+    public String generateEmailVerificationToken(User user) {
+        try{
+            EmailVerificationToken token = new EmailVerificationToken();
+            token.setToken(UUID.randomUUID().toString());
+            token.setExpiredAt(LocalDateTime.now().plusMinutes(5));
+
+            user.addVerificationToken(token);
+            userRepository.save(user);
+
+            return token.getToken();
+        } catch (Exception ex) {
+            log.error("Error while generating emailVerificationToken", ex);
+        }
+        return null;
     }
 }
