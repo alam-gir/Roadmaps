@@ -6,6 +6,5 @@ import com.roadmaps.Roadmaps.modules.user.enities.User;
 public interface UserService {
     User getUserByEmail(String email);
     User addUser(UserRequestDto userDto);
-    String generateEmailVerificationToken(User user);
     User update(User user);
 }

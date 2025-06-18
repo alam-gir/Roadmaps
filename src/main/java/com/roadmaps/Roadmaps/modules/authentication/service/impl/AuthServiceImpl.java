@@ -28,6 +28,7 @@ import org.springframework.security.core.AuthenticationException;
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDateTime;
+import java.util.UUID;
 
 @Service
 @Slf4j
@@ -83,6 +84,23 @@ public class AuthServiceImpl implements AuthService {
             log.warn("Authenticateion Exception when login : {}", ex.getMessage());
             throw new InvalidEmailPasswordException();
         }
+    }
+
+    @Override
+    public String generateEmailVerificationToken(User user) {
+        try{
+            EmailVerificationToken token = new EmailVerificationToken();
+            token.setToken(UUID.randomUUID().toString());
+            token.setExpiredAt(LocalDateTime.now().plusMinutes(5));
+
+            user.setVerificationToken(token);
+            userService.update(user);
+
+            return token.getToken();
+        } catch (Exception ex) {
+            log.error("Error while generating emailVerificationToken", ex);
+        }
+        return null;
     }
 
     @Override
