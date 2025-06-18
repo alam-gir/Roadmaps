@@ -6,6 +6,8 @@ import com.roadmaps.Roadmaps.common.utils.CookieUtils;
 import com.roadmaps.Roadmaps.modules.authentication.dtos.request.LoginRequestDto;
 import com.roadmaps.Roadmaps.modules.authentication.dtos.request.SignupRequestDto;
 import com.roadmaps.Roadmaps.modules.authentication.service.AuthService;
+import com.roadmaps.Roadmaps.modules.user.enities.User;
+import com.roadmaps.Roadmaps.modules.user.events.UserRegistrationEvent;
 import com.roadmaps.Roadmaps.modules.user.service.UserService;
 import com.roadmaps.Roadmaps.security.UserPrinciple;
 import com.roadmaps.Roadmaps.security.jwt.JwtService;
@@ -13,6 +15,7 @@ import jakarta.servlet.http.HttpServletResponse;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
@@ -26,13 +29,21 @@ public class AuthServiceImpl implements AuthService {
     private final AuthenticationManager authenticationManager;
     private final UserService userService;
     private final JwtService jwtService;
+    private final ApplicationEventPublisher eventPublisher;
 
     @Value("${jwt.accessTokenExpiration:604800000}")
     long accessTokenExpirationInMillis;
 
+    @Value("${frontendBaseUrl}")
+    String frontendBaseUrl;
+
     @Override
     public ApiResponse<?> signup(SignupRequestDto signupDto) {
-        userService.addUser(signupDto);
+        User user = userService.addUser(signupDto);
+
+        // publish event to sent verification email to user
+        eventPublisher.publishEvent(new UserRegistrationEvent(this, user, frontendBaseUrl));
+
         return ApiResponse.success(null, "Account created.");
     }
 
