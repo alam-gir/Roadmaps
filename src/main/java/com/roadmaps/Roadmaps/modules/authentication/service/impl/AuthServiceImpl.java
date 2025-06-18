@@ -137,9 +137,7 @@ public class AuthServiceImpl implements AuthService {
         user.setVerificationToken(null);
         user.setEmailVerified(true);
 
-        user = userService.update(user);
-
-        userCacheService.setUserByEmail(user.getEmail(), user);
+        userService.update(user);
     }
 
     private void validateToken(EmailVerificationToken verificationToken, String token) {

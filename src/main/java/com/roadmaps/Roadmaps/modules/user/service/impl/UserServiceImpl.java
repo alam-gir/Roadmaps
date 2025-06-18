@@ -62,7 +62,9 @@ public class UserServiceImpl implements UserService {
     @Override
     public User update(User user) {
         try{
-            return userRepository.save(user);
+            User updatedUser = userRepository.save(user);
+            userCacheService.setUserByEmail(updatedUser.getEmail(), updatedUser);
+            return updatedUser;
         } catch (DataIntegrityViolationException ex) {
             log.error("Error while updating user", ex);
             throw new DuplicateEmailException(user.getEmail());
