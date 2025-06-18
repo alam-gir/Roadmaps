@@ -69,7 +69,7 @@ public class UserServiceImpl implements UserService {
             token.setToken(UUID.randomUUID().toString());
             token.setExpiredAt(LocalDateTime.now().plusMinutes(5));
 
-            user.addVerificationToken(token);
+            user.setVerificationToken(token);
             userRepository.save(user);
 
             return token.getToken();

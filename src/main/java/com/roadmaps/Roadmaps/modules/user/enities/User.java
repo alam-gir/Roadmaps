@@ -6,9 +6,6 @@ import jakarta.persistence.*;
 import lombok.*;
 import lombok.experimental.SuperBuilder;
 
-import java.util.ArrayList;
-import java.util.List;
-
 @Entity
 @Table(name = "users")
 @SuperBuilder
@@ -30,14 +27,9 @@ public class User extends BaseEntity {
     @Builder.Default
     private ROLE role = ROLE.USER;
 
-    @OneToMany(cascade = CascadeType.ALL, fetch = FetchType.EAGER)
+    @OneToOne(cascade = CascadeType.ALL, fetch = FetchType.EAGER)
     @JoinColumn(
-            name = "user_id"
+            name = "verification_token_id"
     )
-    private List<EmailVerificationToken> verificationTokens = new ArrayList<>();
-
-    public void addVerificationToken(EmailVerificationToken verificationToken){
-        if(this.verificationTokens == null){ this.verificationTokens = new ArrayList<>();}
-        verificationTokens.add(verificationToken);
-    }
+    private EmailVerificationToken verificationToken;
 }
