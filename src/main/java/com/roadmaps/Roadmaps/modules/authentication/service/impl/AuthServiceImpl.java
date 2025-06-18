@@ -1,6 +1,6 @@
 package com.roadmaps.Roadmaps.modules.authentication.service.impl;
 
-import com.roadmaps.Roadmaps.cache.UserCacheService;
+import com.roadmaps.Roadmaps.cache.TokenBlacklistService;
 import com.roadmaps.Roadmaps.common.exceptions.ApiException;
 import com.roadmaps.Roadmaps.common.exceptions.InvalidEmailPasswordException;
 import com.roadmaps.Roadmaps.common.exceptions.NotFoundException;
@@ -15,12 +15,14 @@ import com.roadmaps.Roadmaps.modules.user.events.UserRegistrationEvent;
 import com.roadmaps.Roadmaps.modules.user.service.UserService;
 import com.roadmaps.Roadmaps.security.UserPrinciple;
 import com.roadmaps.Roadmaps.security.jwt.JwtService;
+import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.ApplicationEventPublisher;
+import org.springframework.http.HttpStatus;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
@@ -28,6 +30,7 @@ import org.springframework.security.core.AuthenticationException;
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDateTime;
+import java.util.Optional;
 import java.util.UUID;
 
 @Service
@@ -39,6 +42,7 @@ public class AuthServiceImpl implements AuthService {
     private final UserService userService;
     private final JwtService jwtService;
     private final ApplicationEventPublisher eventPublisher;
+    private final TokenBlacklistService tokenBlacklistService;
 
     @Value("${jwt.accessTokenExpiration:604800000}")
     long accessTokenExpirationInMillis;
@@ -82,6 +86,26 @@ public class AuthServiceImpl implements AuthService {
         } catch (AuthenticationException ex) {
             log.warn("Authenticateion Exception when login : {}", ex.getMessage());
             throw new InvalidEmailPasswordException();
+        }
+    }
+
+    @Override
+    public ApiResponse<?> logout(HttpServletResponse response, HttpServletRequest request) {
+        try{
+            CookieUtils.getCookie(request, "accessToken")
+                    .ifPresentOrElse(
+                            tokenBlacklistService::blacklistToken,
+                            () -> {
+                                throw new NotFoundException("Token not found");
+                            }
+                    );
+
+            CookieUtils.removeCookie(request,response,"accessToken");
+
+            return ApiResponse.success(null, "Logout successful.");
+        } catch (Exception ex) {
+            log.error("Logout failed when login : {}", ex.getMessage());
+            throw new ApiException("Something went wrong when Logout.");
         }
     }
 

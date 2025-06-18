@@ -5,6 +5,7 @@ import com.roadmaps.Roadmaps.modules.authentication.dtos.request.LoginRequestDto
 import com.roadmaps.Roadmaps.modules.authentication.dtos.request.SignupRequestDto;
 import com.roadmaps.Roadmaps.modules.authentication.service.AuthService;
 import com.roadmaps.Roadmaps.security.UserPrinciple;
+import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import jakarta.validation.Valid;
 import jakarta.validation.constraints.NotBlank;
@@ -29,6 +30,12 @@ public class AuthController {
     ) {
         ApiResponse<?> loginResponse = authService.login(response, loginDto);
         return ResponseEntity.ok(loginResponse);
+    }
+
+    @GetMapping("logout")
+    public ResponseEntity<?> logout(HttpServletRequest request, HttpServletResponse response) {
+        ApiResponse<?> logoutResponse = authService.logout(response, request);
+        return ResponseEntity.ok(logoutResponse);
     }
 
     @PostMapping("sign-up")
