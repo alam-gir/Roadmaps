@@ -10,7 +10,6 @@ import org.springframework.web.multipart.MultipartFile;
 import software.amazon.awssdk.core.sync.RequestBody;
 import software.amazon.awssdk.services.s3.S3Client;
 import software.amazon.awssdk.services.s3.model.DeleteObjectRequest;
-import software.amazon.awssdk.services.s3.model.ObjectCannedACL;
 import software.amazon.awssdk.services.s3.model.PutObjectRequest;
 
 import java.util.UUID;
@@ -25,6 +24,8 @@ public class R2StorageServiceImpl implements R2StorageService {
     private String bucket;
     @Value("${cloud.aws.s3.endpoint}")
     private String endpoint;
+    @Value("${cloud.aws.credentials.public-url}")
+    private String publicUrl;
 
     @Override
     public String fileUpload(MultipartFile file, String folder) {
@@ -33,14 +34,16 @@ public class R2StorageServiceImpl implements R2StorageService {
         String key = (folder != null) ? folder + "/" + uniqueName : uniqueName;
 
         try{
+            byte[] fileBytes = file.getBytes();
+
             PutObjectRequest putObjectRequest = PutObjectRequest.builder()
                     .bucket(bucket)
                     .key(key)
                     .contentType(file.getContentType())
-                    .acl(ObjectCannedACL.PUBLIC_READ)
+                    .contentLength((long) fileBytes.length)
                     .build();
 
-            s3Client.putObject(putObjectRequest, RequestBody.fromInputStream(file.getInputStream(), file.getSize()));
+            s3Client.putObject(putObjectRequest, RequestBody.fromBytes(fileBytes));
             return getUrlFromKey(key);
         } catch (Exception e){
             log.error("Failed to upload file to cloud : {}", e.getMessage(), e);
@@ -66,11 +69,11 @@ public class R2StorageServiceImpl implements R2StorageService {
     }
 
     private String getUrlFromKey(String key) {
-        return endpoint.concat("/").concat(bucket).concat("/").concat(key);
+        return publicUrl.concat("/").concat(key);
     }
 
     private String getKeyFromUrl(String url) {
-        String prefix = endpoint.concat("/").concat(bucket).concat("/");
+        String prefix = publicUrl.concat("/");
         if(url.startsWith(prefix)){
             return url.substring(prefix.length());
         }

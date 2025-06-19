@@ -23,17 +23,25 @@ public class RoadmapServiceImpl implements RoadmapService {
     private final R2StorageService r2StorageService;
 
     @Override
+    @Transactional
     public Roadmap addRoadmap(RoadmapRequestDto roadmapDto) {
+        String image = null;
         try{
             // if roadmap is empty, throw error.
             validateData(roadmapDto.getText(), roadmapDto.getImage());
 
-            String image = uploadImage(roadmapDto.getImage(), "roadmap_images");
+            image = uploadImage(roadmapDto.getImage(), "roadmap_images");
 
             Roadmap roadmap = roadmapMapper.toEntity(roadmapDto, image);
 
             return roadmapRepository.save(roadmap);
-        } catch (Exception ex) {
+        } catch (ApiException ex) {
+            deleteImageIfFailed(image);
+            log.error("Failed to add roadmap : {}", ex.getMessage(), ex);
+            throw ex;
+        }
+        catch (Exception ex) {
+            deleteImageIfFailed(image);
             log.error("Error while create roadmap : {}",ex.getMessage(), ex);
             throw new ApiException("Failed to add roadmap");
         }
@@ -48,6 +56,12 @@ public class RoadmapServiceImpl implements RoadmapService {
     private String uploadImage(MultipartFile image, String folder) {
         if(image == null || image.isEmpty()) return null;
         return r2StorageService.fileUpload(image, folder);
+    }
+
+    private void deleteImageIfFailed(String image) {
+        if(image != null && !image.isEmpty()){
+            r2StorageService.deleteFile(image);
+        }
     }
 
 }

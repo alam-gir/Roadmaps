@@ -19,12 +19,6 @@ public class S3Config {
     @Value("${cloud.aws.credentials.secret-key}")
     private String secretKey;
 
-    @Value("${cloud.aws.s3.bucket}")
-    private String bucketName;
-
-    @Value("${cloud.aws.s3.region}")
-    private String region;
-
     @Value("${cloud.aws.s3.endpoint}")
     private String endpoint;
 
@@ -35,9 +29,10 @@ public class S3Config {
         return S3Client.builder()
                 .endpointOverride(URI.create(endpoint))
                 .credentialsProvider(StaticCredentialsProvider.create(credentials))
-                .region(Region.of(region))
+                .region(Region.US_EAST_1)
                 .serviceConfiguration(S3Configuration.builder()
                         .pathStyleAccessEnabled(true)
+                        .chunkedEncodingEnabled(false)
                         .build())
                 .build();
     }
