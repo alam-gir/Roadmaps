@@ -2,6 +2,7 @@ package com.roadmaps.Roadmaps.modules.authentication.service.impl;
 
 import com.roadmaps.Roadmaps.cache.TokenBlacklistService;
 import com.roadmaps.Roadmaps.common.exceptions.ApiException;
+import com.roadmaps.Roadmaps.common.exceptions.DuplicateEmailException;
 import com.roadmaps.Roadmaps.common.exceptions.InvalidEmailPasswordException;
 import com.roadmaps.Roadmaps.common.exceptions.NotFoundException;
 import com.roadmaps.Roadmaps.common.utils.ApiResponse;
@@ -13,6 +14,7 @@ import com.roadmaps.Roadmaps.modules.user.enities.EmailVerificationToken;
 import com.roadmaps.Roadmaps.modules.user.enities.User;
 import com.roadmaps.Roadmaps.modules.user.events.UserEmailVerifiedEvent;
 import com.roadmaps.Roadmaps.modules.user.events.UserRegistrationEvent;
+import com.roadmaps.Roadmaps.modules.user.mapper.UserMapper;
 import com.roadmaps.Roadmaps.modules.user.service.UserService;
 import com.roadmaps.Roadmaps.security.UserPrinciple;
 import com.roadmaps.Roadmaps.security.jwt.JwtService;
@@ -23,7 +25,6 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.ApplicationEventPublisher;
-import org.springframework.http.HttpStatus;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
@@ -31,8 +32,6 @@ import org.springframework.security.core.AuthenticationException;
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDateTime;
-import java.util.Optional;
-import java.util.UUID;
 
 @Service
 @Slf4j
@@ -44,6 +43,7 @@ public class AuthServiceImpl implements AuthService {
     private final JwtService jwtService;
     private final ApplicationEventPublisher eventPublisher;
     private final TokenBlacklistService tokenBlacklistService;
+    private final UserMapper userMapper;
 
     @Value("${jwt.accessTokenExpiration:604800000}")
     long accessTokenExpirationInMillis;
@@ -54,7 +54,10 @@ public class AuthServiceImpl implements AuthService {
     @Override
     @Transactional
     public ApiResponse<?> signup(SignupRequestDto signupDto) {
-        User user = userService.addUser(signupDto);
+        User user = userMapper.toEntityWithEncryptedPassword(signupDto);
+        user.setVerificationToken(userMapper.getNewEmailVerificationToken());
+
+        user = userService.save(user);
 
         // publish event to sent verification email to user
         eventPublisher.publishEvent(new UserRegistrationEvent(this, user, frontendBaseUrl));
@@ -111,23 +114,6 @@ public class AuthServiceImpl implements AuthService {
     }
 
     @Override
-    public String generateEmailVerificationToken(User user) {
-        try{
-            EmailVerificationToken token = new EmailVerificationToken();
-            token.setToken(UUID.randomUUID().toString());
-            token.setExpiredAt(LocalDateTime.now().plusMinutes(5));
-
-            user.setVerificationToken(token);
-            userService.update(user);
-
-            return token.getToken();
-        } catch (Exception ex) {
-            log.error("Error while generating emailVerificationToken", ex);
-        }
-        return null;
-    }
-
-    @Override
     @Transactional
     public void verifyEmail(String userEmail, String token) {
         try{
@@ -171,7 +157,7 @@ public class AuthServiceImpl implements AuthService {
         user.setVerificationToken(null);
         user.setEmailVerified(true);
 
-        userService.update(user);
+        userService.save(user);
     }
 
     private void validateToken(EmailVerificationToken verificationToken, String token) {

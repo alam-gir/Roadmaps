@@ -4,12 +4,10 @@ import com.roadmaps.Roadmaps.cache.UserCacheService;
 import com.roadmaps.Roadmaps.common.exceptions.ApiException;
 import com.roadmaps.Roadmaps.common.exceptions.DuplicateEmailException;
 import com.roadmaps.Roadmaps.common.exceptions.NotFoundException;
-import com.roadmaps.Roadmaps.modules.user.dtos.UserRequestDto;
 import com.roadmaps.Roadmaps.modules.user.enities.User;
 import com.roadmaps.Roadmaps.modules.user.mapper.UserMapper;
 import com.roadmaps.Roadmaps.modules.user.repository.UserRepository;
 import com.roadmaps.Roadmaps.modules.user.service.UserService;
-import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.dao.DataIntegrityViolationException;
@@ -47,32 +45,19 @@ public class UserServiceImpl implements UserService {
     }
 
     @Override
-    public User addUser(UserRequestDto userDto) {
+    public User save(User user) {
         try{
-            User user = userMapper.toEntityWithEncryptedPassword(userDto);
-            return userRepository.save(user);
+            User updatedUser = userRepository.save(user);
+
+            userCacheService.setUserByEmail(updatedUser.getEmail(), updatedUser);
+
+            return updatedUser;
         } catch (DataIntegrityViolationException ex) {
             log.error("Error while saving user", ex);
-            throw new DuplicateEmailException(userDto.getEmail());
+            throw new DuplicateEmailException(user.getEmail());
         } catch (Exception ex) {
             log.error("Error while saving user", ex);
             throw new ApiException("Failed to create account!");
-        }
-    }
-
-    @Override
-    @Transactional
-    public User update(User user) {
-        try{
-            User updatedUser = userRepository.save(user);
-            userCacheService.setUserByEmail(updatedUser.getEmail(), updatedUser);
-            return updatedUser;
-        } catch (DataIntegrityViolationException ex) {
-            log.error("Error while updating user", ex);
-            throw new DuplicateEmailException(user.getEmail());
-        } catch (Exception ex) {
-            log.error("Error while updating user", ex);
-            throw new ApiException("Failed to update user data!");
         }
     }
 }
