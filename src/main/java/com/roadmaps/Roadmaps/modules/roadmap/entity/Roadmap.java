@@ -7,9 +7,6 @@ import lombok.*;
 import lombok.experimental.SuperBuilder;
 import org.hibernate.Length;
 
-import java.util.ArrayList;
-import java.util.List;
-
 @Entity
 @Table(name = "roadmaps")
 @SuperBuilder
@@ -22,9 +19,6 @@ public class Roadmap extends BaseEntity {
     private String text;
 
     private String image;
-
-    @Builder.Default
-    private List<Comment> comments = new ArrayList<Comment>();
 
     @PrePersist
     @PreUpdate

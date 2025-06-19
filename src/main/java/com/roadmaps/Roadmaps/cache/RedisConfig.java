@@ -3,6 +3,9 @@ package com.roadmaps.Roadmaps.cache;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.SerializationFeature;
 import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
+import com.roadmaps.Roadmaps.modules.roadmap.entity.Comment;
+import com.roadmaps.Roadmaps.modules.roadmap.entity.Roadmap;
+import com.roadmaps.Roadmaps.modules.roadmap.entity.Upvote;
 import com.roadmaps.Roadmaps.modules.user.enities.User;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -38,6 +41,39 @@ public class RedisConfig {
         redisTemplate.setConnectionFactory(redisConnectionFactory);
         redisTemplate.setKeySerializer(new StringRedisSerializer());
         Jackson2JsonRedisSerializer<User> jackson2JsonRedisSerializer = new Jackson2JsonRedisSerializer<>(objectMapper, User.class);
+        redisTemplate.setValueSerializer(jackson2JsonRedisSerializer);
+
+        return redisTemplate;
+    }
+
+    @Bean
+    RedisTemplate<String, Roadmap> rodmapRedisTemplate(RedisConnectionFactory redisConnectionFactory, ObjectMapper objectMapper) {
+        RedisTemplate<String, Roadmap> redisTemplate = new RedisTemplate<>();
+        redisTemplate.setConnectionFactory(redisConnectionFactory);
+        redisTemplate.setKeySerializer(new StringRedisSerializer());
+        Jackson2JsonRedisSerializer<Roadmap> jackson2JsonRedisSerializer = new Jackson2JsonRedisSerializer<>(objectMapper, Roadmap.class);
+        redisTemplate.setValueSerializer(jackson2JsonRedisSerializer);
+
+        return redisTemplate;
+    }
+
+    @Bean
+    RedisTemplate<String, Comment> commentRedisTemplate(RedisConnectionFactory redisConnectionFactory, ObjectMapper objectMapper) {
+        RedisTemplate<String, Comment> redisTemplate = new RedisTemplate<>();
+        redisTemplate.setConnectionFactory(redisConnectionFactory);
+        redisTemplate.setKeySerializer(new StringRedisSerializer());
+        Jackson2JsonRedisSerializer<Comment> jackson2JsonRedisSerializer = new Jackson2JsonRedisSerializer<>(objectMapper, Comment.class);
+        redisTemplate.setValueSerializer(jackson2JsonRedisSerializer);
+
+        return redisTemplate;
+    }
+
+    @Bean
+    RedisTemplate<String, Upvote> upvoteRedisTemplate(RedisConnectionFactory redisConnectionFactory, ObjectMapper objectMapper) {
+        RedisTemplate<String, Upvote> redisTemplate = new RedisTemplate<>();
+        redisTemplate.setConnectionFactory(redisConnectionFactory);
+        redisTemplate.setKeySerializer(new StringRedisSerializer());
+        Jackson2JsonRedisSerializer<Upvote> jackson2JsonRedisSerializer = new Jackson2JsonRedisSerializer<>(objectMapper, Upvote.class);
         redisTemplate.setValueSerializer(jackson2JsonRedisSerializer);
 
         return redisTemplate;
