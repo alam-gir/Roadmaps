@@ -24,3 +24,10 @@ MAIL_PASSWORD= your gmail app password
 
 ## FRONT END PROPERTIES ---------------------------
 frontendBaseUrl:
+
+## cloudflare---------------------------------------------
+R2_ENDPOINT=
+R2_BUCKET_NAME=
+R2_ACCESS_KEY=
+R2_SECRET_KEY=
+R2_PUBLIC_URL=

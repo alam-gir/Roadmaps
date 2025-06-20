@@ -30,9 +30,20 @@ spring:
           auth: true
           starttls:
             enable: true
+cloud:
+  aws:
+    s3:
+      endpoint: ${R2_ENDPOINT}
+      region: us-east-1
+      bucket: ${R2_BUCKET_NAME}
+    credentials:
+      access-key: ${R2_ACCESS_KEY}
+      secret-key: ${R2_SECRET_KEY}
+      public-url: ${R2_PUBLIC_URL}
 
 jwt:
   secret:${JWT_SECRET}
   accessTokenExpiration:${JWT_ACCESS_TOKEN_EXPIRATION}
+
 
 frontendBaseUrl: ${FRONTEND_BASE_URL}

@@ -106,6 +106,13 @@
 			<version>2.0.12</version>
 		</dependency>
 
+		<dependency>
+			<groupId>software.amazon.awssdk</groupId>
+			<artifactId>s3</artifactId>
+			<version>2.31.65</version>
+			<scope>compile</scope>
+		</dependency>
+
 
 	</dependencies>
 
