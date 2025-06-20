@@ -2,6 +2,7 @@ package com.roadmaps.Roadmaps.modules.roadmap.entity;
 
 import com.roadmaps.Roadmaps.common.entities.BaseEntity;
 import com.roadmaps.Roadmaps.common.exceptions.ApiException;
+import com.roadmaps.Roadmaps.modules.user.enities.User;
 import jakarta.persistence.*;
 import lombok.*;
 import lombok.experimental.SuperBuilder;
@@ -30,6 +31,13 @@ public class Comment extends BaseEntity {
             nullable = false
     )
     private Roadmap roadmap;
+
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(
+            name = "user_id",
+            nullable = false
+    )
+    private User user;
 
     @PrePersist
     @PreUpdate

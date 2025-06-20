@@ -1,14 +1,21 @@
 package com.roadmaps.Roadmaps.modules.roadmap.service.impl;
 
-import com.roadmaps.Roadmaps.cache.CommentCacheService;
 import com.roadmaps.Roadmaps.common.exceptions.ApiException;
 import com.roadmaps.Roadmaps.common.exceptions.NotFoundException;
+import com.roadmaps.Roadmaps.common.r2Storage.R2StorageService;
+import com.roadmaps.Roadmaps.modules.roadmap.dtos.CommentRequestDto;
 import com.roadmaps.Roadmaps.modules.roadmap.entity.Comment;
+import com.roadmaps.Roadmaps.modules.roadmap.entity.Roadmap;
+import com.roadmaps.Roadmaps.modules.roadmap.mapper.RoadmapMapper;
 import com.roadmaps.Roadmaps.modules.roadmap.repository.CommentRepository;
 import com.roadmaps.Roadmaps.modules.roadmap.service.CommentService;
+import com.roadmaps.Roadmaps.modules.roadmap.service.RoadmapService;
+import com.roadmaps.Roadmaps.modules.user.enities.User;
+import com.roadmaps.Roadmaps.modules.user.service.UserService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
+import org.springframework.web.multipart.MultipartFile;
 
 import java.util.UUID;
 
@@ -18,7 +25,10 @@ import java.util.UUID;
 public class CommentServiceImpl implements CommentService {
 
     private final CommentRepository commentRepository;
-    private final CommentCacheService commentCacheService;
+    private final R2StorageService r2StorageService;
+    private final RoadmapMapper roadmapMapper;
+    private final RoadmapService roadmapService;
+    private final UserService userService;
 
     @Override
     public Comment getById(String id) {
@@ -37,17 +47,47 @@ public class CommentServiceImpl implements CommentService {
         return getCommentById(id);
     }
 
+    @Override
+    public Comment addComment(String userEmail, UUID roadmapId, CommentRequestDto commentDto) {
+        return createComment(userEmail, roadmapId, null, commentDto );
+    }
+
+    @Override
+    public Comment addCommentReply(String userEmail, UUID roadmapId, UUID parentCommentId, CommentRequestDto commentDto) {
+        return createComment(userEmail, roadmapId, parentCommentId, commentDto);
+    }
+
+    private Comment createComment(String userEmail, UUID roadmapId, UUID parentCommentId, CommentRequestDto commentDto) {
+        String image = null;
+        try{
+            // if comment is empty, throw error.
+            validateData(commentDto.getText(), commentDto.getImage());
+
+            // get all the required data
+            User user = userService.getUserByEmail(userEmail);
+            Roadmap roadmap = roadmapService.getById(roadmapId);
+            Comment parentComment = getParentComment(parentCommentId);
+            image = uploadImage(commentDto.getImage(), "roadmap_comment_images");
+
+            Comment newComment = roadmapMapper.toCommentEntity(user, roadmap, parentComment, commentDto.getText(), image);
+
+            return commentRepository.save(newComment);
+        } catch (ApiException ex) {
+            deleteImageIfFailed(image);
+            log.error("Failed to add roadmap : {}", ex.getMessage(), ex);
+            throw ex;
+        }
+        catch (Exception ex) {
+            deleteImageIfFailed(image);
+            log.error("Error while create roadmap : {}",ex.getMessage(), ex);
+            throw new ApiException("Failed to add roadmap");
+        }
+    }
+
     private Comment getCommentById(UUID id) {
         try{
-            Comment comment = commentCacheService.getById(id.toString());
-            if(comment == null){
-                comment = commentRepository.findById(id)
-                        .orElseThrow(() -> new NotFoundException("Comment Not Found!"));
-            }
-
-            commentCacheService.setById(id.toString(), comment);
-
-            return comment;
+            return commentRepository.findById(id)
+                     .orElseThrow(() -> new NotFoundException("Comment Not Found!"));
         } catch (ApiException | NotFoundException e) {
             log.warn("Failed to find comment : {}", e.getMessage(), e);
             throw e;
@@ -56,5 +96,27 @@ public class CommentServiceImpl implements CommentService {
             log.error("Failed to find comment : {}", ex.getMessage(), ex);
             throw new ApiException("Failed to find comment");
         }
+    }
+
+    private void validateData(String text, MultipartFile image) {
+        if((text == null || text.trim().isEmpty()) &&  (image == null || image.isEmpty())){
+            throw new ApiException("Text or image is required!");
+        }
+    }
+
+    private String uploadImage(MultipartFile image, String folder) {
+        if(image == null || image.isEmpty()) return null;
+        return r2StorageService.fileUpload(image, folder);
+    }
+
+    private void deleteImageIfFailed(String image) {
+        if(image != null && !image.isEmpty()){
+            r2StorageService.deleteFile(image);
+        }
+    }
+
+    private Comment getParentComment(UUID parentCommentId) {
+        if(parentCommentId == null) return null;
+        return getById(parentCommentId);
     }
 }
