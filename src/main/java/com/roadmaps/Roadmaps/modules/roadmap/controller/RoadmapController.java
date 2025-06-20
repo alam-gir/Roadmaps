@@ -55,7 +55,7 @@ public class RoadmapController {
         return ResponseEntity.status(HttpStatus.CREATED).body(apiResponse);
     }
 
-    @PostMapping("/upvote/roadmap/{roadmapId}")
+    @PostMapping("/{roadmapId}/upvote")
     @PreAuthorize("hasAnyRole('USER', 'ADMIN')")
     public ResponseEntity<ApiResponse<?>> upvoteToRoadmap(Authentication authentication, @PathVariable String roadmapId) {
         UserPrinciple user =  (UserPrinciple) authentication.getPrincipal();
@@ -70,7 +70,7 @@ public class RoadmapController {
         return ResponseEntity.ok(apiResponse);
     }
 
-    @PostMapping("/upvote/comment/{commentId}")
+    @PostMapping("/comments/{commentId}/upvote")
     @PreAuthorize("hasAnyRole('USER', 'ADMIN')")
     public ResponseEntity<ApiResponse<?>> upvoteToComment(Authentication authentication, @PathVariable String commentId) {
         UserPrinciple user =  (UserPrinciple) authentication.getPrincipal();

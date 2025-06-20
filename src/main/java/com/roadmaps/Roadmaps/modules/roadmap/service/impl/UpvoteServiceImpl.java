@@ -148,7 +148,9 @@ public class UpvoteServiceImpl implements UpvoteService {
     }
 
     private Upvote findUserUpvote(User user, List<Upvote> upvotes) {
-        return upvotes.stream().filter(upvote -> upvote.getUser().equals(user)).findFirst().orElse(null);
+        return upvotes.stream().filter(upvote ->
+                upvote.getUser() != null && upvote.getUser().getId().equals(user.getId())
+        ).findFirst().orElse(null);
     }
 
     private void removeUpvote(Upvote upvote) {

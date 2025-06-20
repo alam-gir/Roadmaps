@@ -7,6 +7,7 @@ import com.roadmaps.Roadmaps.modules.roadmap.entity.Comment;
 import com.roadmaps.Roadmaps.modules.roadmap.entity.Roadmap;
 import com.roadmaps.Roadmaps.modules.roadmap.entity.Upvote;
 import com.roadmaps.Roadmaps.modules.user.enities.User;
+import jdk.jshell.execution.Util;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.data.redis.connection.RedisConnectionFactory;
@@ -43,7 +44,7 @@ public class RedisConfig {
         RedisTemplate<String, User> redisTemplate = new RedisTemplate<>();
         redisTemplate.setConnectionFactory(redisConnectionFactory);
         redisTemplate.setKeySerializer(new StringRedisSerializer());
-        redisTemplate.setValueSerializer(new GenericJackson2JsonRedisSerializer(objectMapper));
+        redisTemplate.setValueSerializer(Utils.valueSerializer(objectMapper, User.class));
 
         return redisTemplate;
     }
@@ -53,7 +54,7 @@ public class RedisConfig {
         RedisTemplate<String, Roadmap> redisTemplate = new RedisTemplate<>();
         redisTemplate.setConnectionFactory(redisConnectionFactory);
         redisTemplate.setKeySerializer(new StringRedisSerializer());
-        redisTemplate.setValueSerializer(new GenericJackson2JsonRedisSerializer(objectMapper));
+        redisTemplate.setValueSerializer(Utils.valueSerializer(objectMapper, Roadmap.class));
 
         return redisTemplate;
     }
@@ -63,7 +64,7 @@ public class RedisConfig {
         RedisTemplate<String, Comment> redisTemplate = new RedisTemplate<>();
         redisTemplate.setConnectionFactory(redisConnectionFactory);
         redisTemplate.setKeySerializer(new StringRedisSerializer());
-        redisTemplate.setValueSerializer(new GenericJackson2JsonRedisSerializer(objectMapper));
+        redisTemplate.setValueSerializer(Utils.valueSerializer(objectMapper, Comment.class));
 
         return redisTemplate;
     }
@@ -73,7 +74,7 @@ public class RedisConfig {
         RedisTemplate<String, List<Comment>> redisTemplate = new RedisTemplate<>();
         redisTemplate.setConnectionFactory(redisConnectionFactory);
         redisTemplate.setKeySerializer(new StringRedisSerializer());
-        redisTemplate.setValueSerializer(new GenericJackson2JsonRedisSerializer(objectMapper));
+        redisTemplate.setValueSerializer(Utils.listSerializer(objectMapper, Comment.class));
 
         return redisTemplate;
     }
@@ -83,7 +84,7 @@ public class RedisConfig {
         RedisTemplate<String, List<Upvote>> redisTemplate = new RedisTemplate<>();
         redisTemplate.setConnectionFactory(redisConnectionFactory);
         redisTemplate.setKeySerializer(new StringRedisSerializer());
-        redisTemplate.setValueSerializer(new GenericJackson2JsonRedisSerializer(objectMapper));
+        redisTemplate.setValueSerializer(Utils.listSerializer(objectMapper, Upvote.class));
 
         return redisTemplate;
     }
