@@ -2,15 +2,15 @@ package com.roadmaps.Roadmaps.modules.roadmap.controller;
 
 import com.roadmaps.Roadmaps.common.utils.ApiResponse;
 import com.roadmaps.Roadmaps.modules.roadmap.dtos.RoadmapRequestDto;
+import com.roadmaps.Roadmaps.modules.roadmap.entity.Roadmap;
+import com.roadmaps.Roadmaps.modules.roadmap.mapper.RoadmapMapper;
 import com.roadmaps.Roadmaps.modules.roadmap.service.RoadmapService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.validation.annotation.Validated;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
 @RestController
 @RequestMapping("/v1/roadmaps")
@@ -18,6 +18,21 @@ import org.springframework.web.bind.annotation.RestController;
 @Validated
 public class RoadmapController {
     private final RoadmapService roadmapService;
+    private final RoadmapMapper roadmapMapper;
+
+    @GetMapping("/{id}")
+    @PreAuthorize("hasAnyRole('ADMIN', 'USER')")
+    public ResponseEntity<ApiResponse<?>> getRoadmapById(@PathVariable String id) {
+
+        Roadmap roadmap = roadmapService.getById(id);
+
+        ApiResponse<?> apiResponse = ApiResponse.success(
+                roadmapMapper.toResponseDto(roadmap),
+                null
+        );
+
+        return ResponseEntity.ok(apiResponse);
+    }
 
     @PostMapping()
     @PreAuthorize("hasRole('ADMIN')")
