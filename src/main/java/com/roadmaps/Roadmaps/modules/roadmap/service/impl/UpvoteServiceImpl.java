@@ -1,6 +1,5 @@
 package com.roadmaps.Roadmaps.modules.roadmap.service.impl;
 
-import com.roadmaps.Roadmaps.cache.UpvoteCacheService;
 import com.roadmaps.Roadmaps.common.exceptions.ApiException;
 import com.roadmaps.Roadmaps.modules.roadmap.entity.Comment;
 import com.roadmaps.Roadmaps.modules.roadmap.entity.Roadmap;
@@ -24,7 +23,6 @@ import java.util.UUID;
 @RequiredArgsConstructor
 public class UpvoteServiceImpl implements UpvoteService {
     private final UpvoteRepository upvoteRepository;
-    private final UpvoteCacheService upvoteCacheService;
     private final RoadmapService roadmapService;
     private final UserService userService;
     private final CommentService commentService;
@@ -34,15 +32,7 @@ public class UpvoteServiceImpl implements UpvoteService {
     public List<Upvote> getUpvotesByRoadmapId(UUID roadmapId) {
         try{
             Roadmap roadmap = roadmapService.getById(roadmapId);
-            List<Upvote> upvotes = upvoteCacheService.getByRoadmapId(roadmapId.toString());
-            if(upvotes == null) {
-                upvotes = upvoteRepository.findAllByRoadmap(roadmap);
-            }
-
-            if(!upvotes.isEmpty())
-                upvoteCacheService.setByRoadmapId(roadmapId.toString(), upvotes);
-
-            return upvotes;
+            return upvoteRepository.findAllByRoadmap(roadmap);
         } catch (ApiException ex) {
             log.warn("Error to finding upvotes by roadmap id : {}",  roadmapId, ex);
             throw ex;
@@ -72,11 +62,7 @@ public class UpvoteServiceImpl implements UpvoteService {
                 removeUpvote(findUserUpvote(user, upvotes));
             }
 
-            upvotes = upvoteRepository.findAllByRoadmap(roadmap);
-
-            upvoteCacheService.setByRoadmapId(roadmapId, upvotes);
-
-            return upvotes;
+            return upvoteRepository.findAllByRoadmap(roadmap);
         } catch (ApiException ex) {
             log.error("Failed to upvote to roadmap id : {}",  roadmapId, ex);
             throw ex;
@@ -91,15 +77,8 @@ public class UpvoteServiceImpl implements UpvoteService {
     public List<Upvote> getUpvotesByCommentId(UUID commentId) {
         try{
             Comment comment = commentService.getById(commentId);
-            List<Upvote> upvotes = upvoteCacheService.getByCommentId(commentId.toString());
-            if(upvotes == null) {
-                upvotes = upvoteRepository.findAllByComment(comment);
-            }
 
-            if(!upvotes.isEmpty())
-                upvoteCacheService.setByCommentId(commentId.toString(), upvotes);
-
-            return upvotes;
+            return upvoteRepository.findAllByComment(comment);
         } catch (ApiException ex) {
             log.warn("Error to finding upvotes by comment id : {}",  commentId, ex);
             throw ex;
@@ -128,11 +107,7 @@ public class UpvoteServiceImpl implements UpvoteService {
                 removeUpvote(findUserUpvote(user, upvotes));
             }
 
-            upvotes = upvoteRepository.findAllByComment(comment);
-
-            upvoteCacheService.setByCommentId(commentId, upvotes);
-
-            return upvotes;
+            return upvoteRepository.findAllByComment(comment);
         } catch (ApiException ex) {
             log.error("Failed to upvote to comment id : {}",  commentId, ex);
             throw ex;
