@@ -81,9 +81,11 @@ public class CategoryServiceImpl implements CategoryService {
     public void delete(String id) {
         try{
             Category category = getById(id);
+            if(!category.getRoadmaps().isEmpty())
+                throw new ApiException("Category has roadmaps. Empty the category before delete.");
             categoryRepository.delete(category);
         } catch (ApiException ex) {
-            log.error("Failed to delete category : {}", ex.getMessage(), ex);
+            log.warn("Failed to delete category : {}", ex.getMessage(), ex);
             throw ex;
         } catch (Exception ex) {
             log.error("Failed to delete category : {}", ex.getMessage(), ex);
