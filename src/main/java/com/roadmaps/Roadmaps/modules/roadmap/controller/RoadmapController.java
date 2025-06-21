@@ -18,7 +18,6 @@ import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
-import java.util.UUID;
 
 @RestController
 @RequestMapping("/v1/roadmaps")
@@ -31,7 +30,6 @@ public class RoadmapController {
     private final UpvoteMapper upvoteMapper;
 
     @GetMapping("/{id}")
-    @PreAuthorize("hasAnyRole('ADMIN', 'USER')")
     public ResponseEntity<ApiResponse<?>> getRoadmapById(@PathVariable String id) {
 
         Roadmap roadmap = roadmapService.getById(id);
@@ -48,10 +46,10 @@ public class RoadmapController {
     @PreAuthorize("hasRole('ADMIN')")
     public ResponseEntity<ApiResponse<?>> addRoadmap(RoadmapRequestDto roadmapDto) {
 
-        roadmapService.addRoadmap(roadmapDto);
+        Roadmap roadmap = roadmapService.addRoadmap(roadmapDto);
 
         ApiResponse<?> apiResponse = ApiResponse.success(
-                null,
+                roadmapMapper.toResponseDto(roadmap),
                 "Roadmap Added."
         );
 
@@ -59,7 +57,6 @@ public class RoadmapController {
     }
 
     @PostMapping("/{roadmapId}/upvotes")
-    @PreAuthorize("hasAnyRole('USER', 'ADMIN')")
     public ResponseEntity<ApiResponse<?>> upvoteToRoadmap(Authentication authentication, @PathVariable String roadmapId) {
         UserPrinciple user =  (UserPrinciple) authentication.getPrincipal();
 
