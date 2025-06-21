@@ -6,6 +6,7 @@ import com.roadmaps.Roadmaps.common.r2Storage.R2StorageService;
 import com.roadmaps.Roadmaps.modules.roadmap.dtos.CommentRequestDto;
 import com.roadmaps.Roadmaps.modules.roadmap.entity.Comment;
 import com.roadmaps.Roadmaps.modules.roadmap.entity.Roadmap;
+import com.roadmaps.Roadmaps.modules.roadmap.mapper.CommentMapper;
 import com.roadmaps.Roadmaps.modules.roadmap.mapper.RoadmapMapper;
 import com.roadmaps.Roadmaps.modules.roadmap.repository.CommentRepository;
 import com.roadmaps.Roadmaps.modules.roadmap.repository.RoadmapRepository;
@@ -30,6 +31,7 @@ public class CommentServiceImpl implements CommentService {
     private final CommentRepository commentRepository;
     private final R2StorageService r2StorageService;
     private final RoadmapMapper roadmapMapper;
+    private final CommentMapper commentMapper;
     private final UserService userService;
     private final RoadmapRepository roadmapRepository;
 
@@ -112,7 +114,7 @@ public class CommentServiceImpl implements CommentService {
             Comment parentComment = getParentComment(parentCommentId);
             image = uploadImage(commentDto.getImage(), "roadmap_comment_images");
 
-            Comment newComment = roadmapMapper.toCommentEntity(user, roadmap, parentComment, commentDto.getText(), image);
+            Comment newComment = commentMapper.toCommentEntity(user, roadmap, parentComment, commentDto.getText(), image);
 
             return commentRepository.save(newComment);
         } catch (ApiException ex) {

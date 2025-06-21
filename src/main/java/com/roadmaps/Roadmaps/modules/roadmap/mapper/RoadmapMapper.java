@@ -29,35 +29,4 @@ public class RoadmapMapper {
                 roadmap.getImage()
         );
     }
-
-    public List<UpvoteResponseDto> toUpvoteResponseDtoList(List<Upvote> upvotes) {
-        return upvotes.stream().map(upvote -> new UpvoteResponseDto(upvote.getUser().getName())).toList();
-    };
-
-    public Comment toCommentEntity(User user, Roadmap roadmap, Comment parent, String text, String image) {
-        return Comment.builder()
-                .user(user)
-                .roadmap(roadmap)
-                .parent(parent)
-                .text(text)
-                .image(image)
-                .build();
-    }
-
-    public CommentResponseDto toCommentResponseDto(Comment comment) {
-        return new CommentResponseDto(
-                comment.getId().toString(),
-                comment.getText(),
-                comment.getImage()
-        );
-    }
-
-    public CommentReplyResponseDto toCommentReplyResponseDto(Comment comment, String parentId) {
-        return new CommentReplyResponseDto(
-                comment.getId().toString(),
-                parentId,
-                comment.getText(),
-                comment.getImage()
-        );
-    }
 }
