@@ -12,4 +12,6 @@ public interface UpvoteRepository extends JpaRepository<Upvote, UUID> {
     List<Upvote> findAllByRoadmap(Roadmap roadmap);
 
     List<Upvote> findAllByComment(Comment comment);
+
+    List<Upvote> findAllByComment_IdIn(List<UUID> allCommentIds);
 }

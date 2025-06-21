@@ -120,4 +120,19 @@ public class RoadmapController {
 
         return ResponseEntity.status(HttpStatus.CREATED).body(apiResponse);
     }
+
+    @DeleteMapping("/comments/{commentId}")
+    @PreAuthorize("hasAnyRole('USER', 'ADMIN')")
+    public ResponseEntity<ApiResponse<?>> deleteComment(Authentication authentication, @PathVariable String commentId) {
+        UserPrinciple user =  (UserPrinciple) authentication.getPrincipal();
+
+        commentService.deleteUserComment(user.getEmail(), commentId);
+
+        ApiResponse<?> apiResponse = ApiResponse.success(
+                null,
+                "Comment deleted."
+        );
+
+        return ResponseEntity.status(HttpStatus.NO_CONTENT).body(apiResponse);
+    }
 }

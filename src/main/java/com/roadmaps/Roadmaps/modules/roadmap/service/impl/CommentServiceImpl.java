@@ -20,6 +20,8 @@ import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
 
+import java.util.ArrayList;
+import java.util.List;
 import java.util.UUID;
 
 @Service
@@ -70,13 +72,61 @@ public class CommentServiceImpl implements CommentService {
                     .orElseThrow(() -> new NotFoundException("Comment not found!"));
 
             commentRepository.delete(comment);
-            eventPublisher.publishEvent(new CommentDeleteEvent(this, commentUuid));
+            eventPublisher.publishEvent(new CommentDeleteEvent(this, comment));
         } catch (NotFoundException ex) {
             log.error("Failed to delete comment by id : {}", ex.getMessage(), ex);
             throw ex;
         } catch (Exception e) {
             log.error("Failed to delete comment by id : {}", e.getMessage(), e);
             throw new ApiException("Failed to delete comment. Try again!");
+        }
+    }
+
+    @Override
+    @Transactional
+    public void deleteUserComment(String userEmail, String commentId) {
+        try{
+            UUID commentUuid = UUID.fromString(commentId);
+            Comment userComment = getByCommentIdAndUserEmail(commentUuid, userEmail);
+
+            eventPublisher.publishEvent(new CommentDeleteEvent(this, userComment));
+        } catch (NotFoundException ex) {
+            log.error("Failed to delete comment by id : {}", ex.getMessage(), ex);
+            throw ex;
+        } catch (Exception e) {
+            log.error("Failed to delete comment by id : {}", e.getMessage(), e);
+            throw new ApiException("Failed to delete comment. Try again!");
+        }
+    }
+
+    @Override
+    public List<Comment> getAllNestedComments(UUID commentId) {
+        List<Comment> comments = new ArrayList<>();
+        collectNestedComments(commentId, comments);
+        return comments;
+    }
+
+    @Override
+    public void delete(Comment comment) {
+        try{
+            commentRepository.delete(comment);
+        } catch (Exception e){
+            log.error("Failed to delete all comments : {}", e.getMessage(), e);
+            throw new ApiException("Failed to delete all comments. Try again!");
+        }
+    }
+
+    private void collectNestedComments(UUID commentId, List<Comment> comments) {
+        try{
+            List<Comment> children = commentRepository.getCommentsByParentId(commentId);
+
+            for(Comment childComment : children){
+                comments.add(childComment);
+                collectNestedComments(childComment.getId(), comments);
+            }
+        } catch (Exception e){
+            log.error("Failed to collect nested comments by comment id : {}", e.getMessage(), e);
+            throw new ApiException("Failed to collect nested comments. Try again!");
         }
     }
 
@@ -111,6 +161,20 @@ public class CommentServiceImpl implements CommentService {
         try{
             return commentRepository.findById(id)
                      .orElseThrow(() -> new NotFoundException("Comment Not Found!"));
+        } catch (ApiException | NotFoundException e) {
+            log.warn("Failed to find comment : {}", e.getMessage(), e);
+            throw e;
+        }
+        catch (Exception ex) {
+            log.error("Failed to find comment : {}", ex.getMessage(), ex);
+            throw new ApiException("Failed to find comment");
+        }
+    }
+
+    private Comment getByCommentIdAndUserEmail(UUID commentId, String userEmail) {
+        try{
+            return commentRepository.findByIdAndUser_Email(commentId, userEmail)
+                    .orElseThrow(() -> new NotFoundException("Comment Not Found!"));
         } catch (ApiException | NotFoundException e) {
             log.warn("Failed to find comment : {}", e.getMessage(), e);
             throw e;

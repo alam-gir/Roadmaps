@@ -13,4 +13,6 @@ public interface UpvoteService {
     List<Upvote> getUpvotesByCommentId(UUID commentId);
 
     List<Upvote> upvoteByUserEmailAndCommentId(String userEmail, String roadmapId);
+
+    void deleteAllUpvoteByCommentIds(List<UUID> allCommentIds);
 }
