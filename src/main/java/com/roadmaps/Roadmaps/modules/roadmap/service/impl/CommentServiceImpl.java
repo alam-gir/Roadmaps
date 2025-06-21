@@ -6,7 +6,6 @@ import com.roadmaps.Roadmaps.common.r2Storage.R2StorageService;
 import com.roadmaps.Roadmaps.modules.roadmap.dtos.CommentRequestDto;
 import com.roadmaps.Roadmaps.modules.roadmap.entity.Comment;
 import com.roadmaps.Roadmaps.modules.roadmap.entity.Roadmap;
-import com.roadmaps.Roadmaps.modules.roadmap.event.CommentDeleteEvent;
 import com.roadmaps.Roadmaps.modules.roadmap.mapper.RoadmapMapper;
 import com.roadmaps.Roadmaps.modules.roadmap.repository.CommentRepository;
 import com.roadmaps.Roadmaps.modules.roadmap.service.CommentService;
@@ -65,25 +64,6 @@ public class CommentServiceImpl implements CommentService {
 
     @Override
     @Transactional
-    public void deleteById(String commentId) {
-        try{
-            UUID commentUuid = UUID.fromString(commentId);
-            Comment comment = commentRepository.findById(commentUuid)
-                    .orElseThrow(() -> new NotFoundException("Comment not found!"));
-
-            commentRepository.delete(comment);
-            eventPublisher.publishEvent(new CommentDeleteEvent(this, comment));
-        } catch (NotFoundException ex) {
-            log.error("Failed to delete comment by id : {}", ex.getMessage(), ex);
-            throw ex;
-        } catch (Exception e) {
-            log.error("Failed to delete comment by id : {}", e.getMessage(), e);
-            throw new ApiException("Failed to delete comment. Try again!");
-        }
-    }
-
-    @Override
-    @Transactional
     public void deleteUserComment(String userEmail, String commentId) {
         try{
             UUID commentUuid = UUID.fromString(commentId);
@@ -93,6 +73,7 @@ public class CommentServiceImpl implements CommentService {
 
             // collect all images from comment and nested comments
             List<String> allImages = getImagesFromComments(nestedComments);
+            // add root comment image
             if(userComment.getImage() != null)
                 allImages.add(userComment.getImage());
 
@@ -107,21 +88,10 @@ public class CommentServiceImpl implements CommentService {
         }
     }
 
-    @Override
     public List<Comment> getAllNestedComments(UUID commentId) {
         List<Comment> comments = new ArrayList<>();
         collectNestedComments(commentId, comments);
         return comments;
-    }
-
-    @Override
-    public void delete(Comment comment) {
-        try{
-            commentRepository.delete(comment);
-        } catch (Exception e){
-            log.error("Failed to delete all comments : {}", e.getMessage(), e);
-            throw new ApiException("Failed to delete all comments. Try again!");
-        }
     }
 
     private void collectNestedComments(UUID commentId, List<Comment> comments) {
