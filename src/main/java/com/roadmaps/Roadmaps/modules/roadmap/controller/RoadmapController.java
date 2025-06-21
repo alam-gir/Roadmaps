@@ -2,6 +2,8 @@ package com.roadmaps.Roadmaps.modules.roadmap.controller;
 
 import com.roadmaps.Roadmaps.common.utils.ApiResponse;
 import com.roadmaps.Roadmaps.modules.roadmap.dtos.RoadmapRequestDto;
+import com.roadmaps.Roadmaps.modules.roadmap.dtos.RoadmapRequestFiltersDto;
+import com.roadmaps.Roadmaps.modules.roadmap.dtos.response.RoadmapResponseDto;
 import com.roadmaps.Roadmaps.modules.roadmap.entity.Roadmap;
 import com.roadmaps.Roadmaps.modules.roadmap.entity.Upvote;
 import com.roadmaps.Roadmaps.modules.roadmap.mapper.RoadmapMapper;
@@ -10,6 +12,9 @@ import com.roadmaps.Roadmaps.modules.roadmap.service.RoadmapService;
 import com.roadmaps.Roadmaps.modules.roadmap.service.UpvoteService;
 import com.roadmaps.Roadmaps.security.UserPrinciple;
 import lombok.RequiredArgsConstructor;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.web.PageableDefault;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
@@ -28,6 +33,19 @@ public class RoadmapController {
     private final RoadmapMapper roadmapMapper;
     private final UpvoteService upvoteService;
     private final UpvoteMapper upvoteMapper;
+
+    @GetMapping
+    public ResponseEntity<ApiResponse<?>> getAllWithFiltersAndPageable(
+            RoadmapRequestFiltersDto filtersDto,
+            @PageableDefault Pageable pageable) {
+        Page<Roadmap> pagedRoadmaps = roadmapService.getAllWithPageableAndFilter(filtersDto, pageable);
+
+        ApiResponse<Page<RoadmapResponseDto>> apiResponse = ApiResponse.success(
+                roadmapMapper.toPagesResponseDtoList(pagedRoadmaps),
+                null
+        );
+        return ResponseEntity.ok(apiResponse);
+    }
 
     @GetMapping("/{id}")
     public ResponseEntity<ApiResponse<?>> getRoadmapById(@PathVariable String id) {

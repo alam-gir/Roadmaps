@@ -5,6 +5,7 @@ import com.roadmaps.Roadmaps.modules.roadmap.dtos.response.RoadmapResponseDto;
 import com.roadmaps.Roadmaps.modules.roadmap.entity.Category;
 import com.roadmaps.Roadmaps.modules.roadmap.entity.Roadmap;
 import com.roadmaps.Roadmaps.modules.roadmap.enumeration.ROADMAP_STATUS;
+import org.springframework.data.domain.Page;
 import org.springframework.stereotype.Component;
 
 import java.util.List;
@@ -33,5 +34,9 @@ public class RoadmapMapper {
 
     public List<RoadmapResponseDto> toResponseDtoList(List<Roadmap> roadmaps) {
         return roadmaps.stream().map(this::toResponseDto).toList();
+    }
+
+    public Page<RoadmapResponseDto> toPagesResponseDtoList(Page<Roadmap> pagedRoadmaps) {
+        return pagedRoadmaps.map(this::toResponseDto);
     }
 }

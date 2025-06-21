@@ -4,17 +4,22 @@ import com.roadmaps.Roadmaps.common.exceptions.ApiException;
 import com.roadmaps.Roadmaps.common.exceptions.NotFoundException;
 import com.roadmaps.Roadmaps.common.r2Storage.R2StorageService;
 import com.roadmaps.Roadmaps.modules.roadmap.dtos.RoadmapRequestDto;
+import com.roadmaps.Roadmaps.modules.roadmap.dtos.RoadmapRequestFiltersDto;
 import com.roadmaps.Roadmaps.modules.roadmap.entity.Category;
 import com.roadmaps.Roadmaps.modules.roadmap.entity.Roadmap;
 import com.roadmaps.Roadmaps.modules.roadmap.enumeration.ROADMAP_STATUS;
 import com.roadmaps.Roadmaps.modules.roadmap.mapper.RoadmapMapper;
 import com.roadmaps.Roadmaps.modules.roadmap.repository.RoadmapRepository;
+import com.roadmaps.Roadmaps.modules.roadmap.repository.specification.RoadmapSpecification;
 import com.roadmaps.Roadmaps.modules.roadmap.service.CategoryService;
 import com.roadmaps.Roadmaps.modules.roadmap.service.CommentService;
 import com.roadmaps.Roadmaps.modules.roadmap.service.RoadmapService;
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.jpa.domain.Specification;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
 
@@ -32,6 +37,17 @@ public class RoadmapServiceImpl implements RoadmapService {
     private final R2StorageService r2StorageService;
     private final CommentService commentService;
     private final CategoryService  categoryService;
+
+    @Override
+    public Page<Roadmap> getAllWithPageableAndFilter(RoadmapRequestFiltersDto filtersDto, Pageable pageable) {
+        try{
+            Specification<Roadmap> specification = RoadmapSpecification.build(filtersDto);
+            return roadmapRepository.findAll(specification, pageable);
+        } catch (Exception ex) {
+            log.error("failed to get roadmaps with filter and pageable : {}", ex.getMessage(), ex);
+            throw new ApiException("Failed to get roadmaps. Try again later!");
+        }
+    }
 
     @Override
     public Roadmap getById(String id) {
