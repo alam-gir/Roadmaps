@@ -1,11 +1,9 @@
 package com.roadmaps.Roadmaps.modules.roadmap.service.impl;
 
-import com.roadmaps.Roadmaps.cache.RoadmapCacheService;
 import com.roadmaps.Roadmaps.common.exceptions.ApiException;
 import com.roadmaps.Roadmaps.common.exceptions.NotFoundException;
 import com.roadmaps.Roadmaps.common.r2Storage.R2StorageService;
 import com.roadmaps.Roadmaps.modules.roadmap.dtos.RoadmapRequestDto;
-import com.roadmaps.Roadmaps.modules.roadmap.entity.Comment;
 import com.roadmaps.Roadmaps.modules.roadmap.entity.Roadmap;
 import com.roadmaps.Roadmaps.modules.roadmap.mapper.RoadmapMapper;
 import com.roadmaps.Roadmaps.modules.roadmap.repository.RoadmapRepository;
@@ -17,7 +15,6 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
 
-import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
 
@@ -29,7 +26,6 @@ public class RoadmapServiceImpl implements RoadmapService {
     private final RoadmapMapper  roadmapMapper;
     private final RoadmapRepository   roadmapRepository;
     private final R2StorageService r2StorageService;
-    private final RoadmapCacheService roadmapCacheService;
     private final CommentService commentService;
 
     @Override
@@ -51,15 +47,10 @@ public class RoadmapServiceImpl implements RoadmapService {
 
     private Roadmap getRoadmapById(UUID id) {
         try{
-            Roadmap roadmap = roadmapCacheService.getById(id.toString());
-            if(roadmap == null){
-                roadmap = roadmapRepository.findById(id)
-                        .orElseThrow(() -> new NotFoundException("Roadmap Not Found!"));
-            }
 
-            roadmapCacheService.setById(id.toString(), roadmap);
+           return roadmapRepository.findById(id)
+                    .orElseThrow(() -> new NotFoundException("Roadmap Not Found!"));
 
-            return roadmap;
         } catch (ApiException | NotFoundException e) {
             log.warn("Failed to find roadmap : {}", e.getMessage(), e);
             throw e;
@@ -96,9 +87,10 @@ public class RoadmapServiceImpl implements RoadmapService {
     }
 
     @Override
+    @Transactional
     public void deleteById(String id) {
         try{
-            Roadmap roadmap = roadmapCacheService.getById(id);
+            Roadmap roadmap = getById(id);
             deleteAllRelatedImageFromCloud(roadmap);
             roadmapRepository.delete(roadmap);
         } catch (NotFoundException ex){
@@ -116,13 +108,7 @@ public class RoadmapServiceImpl implements RoadmapService {
         if(roadmap.getImage() != null && !roadmap.getImage().isEmpty())
             allImage.add(roadmap.getImage());
 
-        // add commentsImages
-        List<Comment> comments = roadmap.getComments();
-        for(Comment comment : comments){
-            if(comment.getImage() != null && !comment.getImage().isEmpty())
-                allImage.add(comment.getImage());
-            commentService.c
-        }
+        r2StorageService.deleteAllFiles(allImage);
     }
 
     private void validateData(String text, MultipartFile image) {

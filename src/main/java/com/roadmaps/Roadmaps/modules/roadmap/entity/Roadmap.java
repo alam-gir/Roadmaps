@@ -25,6 +25,9 @@ public class Roadmap extends BaseEntity {
     @OneToMany(mappedBy = "roadmap",  fetch = FetchType.LAZY,  cascade = CascadeType.ALL, orphanRemoval = true)
     private List<Comment> comments;
 
+    @OneToMany(mappedBy = "roadmap", fetch = FetchType.LAZY,  cascade = CascadeType.ALL, orphanRemoval = true)
+    private List<Upvote> upvotes;
+
     @PrePersist
     @PreUpdate
     public void validateRoadmapContent() {

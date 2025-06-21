@@ -8,8 +8,8 @@ import com.roadmaps.Roadmaps.modules.roadmap.entity.Comment;
 import com.roadmaps.Roadmaps.modules.roadmap.entity.Roadmap;
 import com.roadmaps.Roadmaps.modules.roadmap.mapper.RoadmapMapper;
 import com.roadmaps.Roadmaps.modules.roadmap.repository.CommentRepository;
+import com.roadmaps.Roadmaps.modules.roadmap.repository.RoadmapRepository;
 import com.roadmaps.Roadmaps.modules.roadmap.service.CommentService;
-import com.roadmaps.Roadmaps.modules.roadmap.service.RoadmapService;
 import com.roadmaps.Roadmaps.modules.user.enities.User;
 import com.roadmaps.Roadmaps.modules.user.service.UserService;
 import jakarta.transaction.Transactional;
@@ -30,8 +30,8 @@ public class CommentServiceImpl implements CommentService {
     private final CommentRepository commentRepository;
     private final R2StorageService r2StorageService;
     private final RoadmapMapper roadmapMapper;
-    private final RoadmapService roadmapService;
     private final UserService userService;
+    private final RoadmapRepository roadmapRepository;
 
     @Override
     public Comment getById(String id) {
@@ -76,7 +76,7 @@ public class CommentServiceImpl implements CommentService {
                 allImages.add(userComment.getImage());
 
             commentRepository.delete(userComment);
-            deleteAllImage(allImages);
+            r2StorageService.deleteAllFiles(allImages);
         } catch (NotFoundException ex) {
             log.error("Failed to delete comment by id : {}", ex.getMessage(), ex);
             throw ex;
@@ -106,7 +106,9 @@ public class CommentServiceImpl implements CommentService {
 
             // get all the required data
             User user = userService.getUserByEmail(userEmail);
-            Roadmap roadmap = roadmapService.getById(roadmapId);
+            Roadmap roadmap = roadmapRepository.findById(roadmapId)
+                    .orElseThrow(() -> new NotFoundException("Roadmap not found!"));
+
             Comment parentComment = getParentComment(parentCommentId);
             image = uploadImage(commentDto.getImage(), "roadmap_comment_images");
 
@@ -205,11 +207,5 @@ public class CommentServiceImpl implements CommentService {
         }
 
         return images;
-    }
-
-    private void deleteAllImage(List<String> images) {
-        for(String image : images){
-            r2StorageService.deleteFile(image);
-        }
     }
 }

@@ -5,15 +5,11 @@ import com.fasterxml.jackson.databind.SerializationFeature;
 import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
 import com.roadmaps.Roadmaps.modules.roadmap.entity.Comment;
 import com.roadmaps.Roadmaps.modules.roadmap.entity.Roadmap;
-import com.roadmaps.Roadmaps.modules.roadmap.entity.Upvote;
 import com.roadmaps.Roadmaps.modules.user.enities.User;
-import jdk.jshell.execution.Util;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.data.redis.connection.RedisConnectionFactory;
 import org.springframework.data.redis.core.RedisTemplate;
-import org.springframework.data.redis.serializer.GenericJackson2JsonRedisSerializer;
-import org.springframework.data.redis.serializer.Jackson2JsonRedisSerializer;
 import org.springframework.data.redis.serializer.StringRedisSerializer;
 
 import java.util.List;
@@ -60,16 +56,6 @@ public class RedisConfig {
     }
 
     @Bean
-    RedisTemplate<String, Comment> commentRedisTemplate(RedisConnectionFactory redisConnectionFactory, ObjectMapper objectMapper) {
-        RedisTemplate<String, Comment> redisTemplate = new RedisTemplate<>();
-        redisTemplate.setConnectionFactory(redisConnectionFactory);
-        redisTemplate.setKeySerializer(new StringRedisSerializer());
-        redisTemplate.setValueSerializer(Utils.valueSerializer(objectMapper, Comment.class));
-
-        return redisTemplate;
-    }
-
-    @Bean
     RedisTemplate<String, List<Comment>> commentsRedisTemplate(RedisConnectionFactory redisConnectionFactory, ObjectMapper objectMapper) {
         RedisTemplate<String, List<Comment>> redisTemplate = new RedisTemplate<>();
         redisTemplate.setConnectionFactory(redisConnectionFactory);
@@ -79,14 +65,5 @@ public class RedisConfig {
         return redisTemplate;
     }
 
-    @Bean
-    RedisTemplate<String, List<Upvote>> upvotesRedisTemplate(RedisConnectionFactory redisConnectionFactory, ObjectMapper objectMapper) {
-        RedisTemplate<String, List<Upvote>> redisTemplate = new RedisTemplate<>();
-        redisTemplate.setConnectionFactory(redisConnectionFactory);
-        redisTemplate.setKeySerializer(new StringRedisSerializer());
-        redisTemplate.setValueSerializer(Utils.listSerializer(objectMapper, Upvote.class));
-
-        return redisTemplate;
-    }
 
 }
