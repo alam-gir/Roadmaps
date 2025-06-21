@@ -7,6 +7,8 @@ import lombok.*;
 import lombok.experimental.SuperBuilder;
 import org.hibernate.Length;
 
+import java.util.List;
+
 @Entity
 @Table(name = "roadmaps")
 @SuperBuilder
@@ -19,6 +21,9 @@ public class Roadmap extends BaseEntity {
     private String text;
 
     private String image;
+
+    @OneToMany(mappedBy = "roadmap",  fetch = FetchType.LAZY,  cascade = CascadeType.ALL, orphanRemoval = true)
+    private List<Comment> comments;
 
     @PrePersist
     @PreUpdate

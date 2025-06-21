@@ -117,17 +117,6 @@ public class UpvoteServiceImpl implements UpvoteService {
         }
     }
 
-    @Override
-    public void deleteAllUpvoteByCommentIds(List<UUID> allCommentIds) {
-        try{
-            List<Upvote> allUpvote = upvoteRepository.findAllByComment_IdIn(allCommentIds);
-            upvoteRepository.deleteAll(allUpvote);
-        } catch (Exception ex){
-            log.error("Failed to delete upvotes by comment id : {}", allCommentIds, ex);
-            throw new ApiException("Failed to delete upvotes. Try again!");
-        }
-    }
-
     // helper methods for both - roadmap upvotes and comment upvotes.
     private boolean haveNotVoted(User user, List<Upvote> upvotes) {
         return findUserUpvote(user, upvotes) == null;

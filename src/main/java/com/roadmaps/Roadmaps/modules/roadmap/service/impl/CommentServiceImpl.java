@@ -89,7 +89,15 @@ public class CommentServiceImpl implements CommentService {
             UUID commentUuid = UUID.fromString(commentId);
             Comment userComment = getByCommentIdAndUserEmail(commentUuid, userEmail);
 
-            eventPublisher.publishEvent(new CommentDeleteEvent(this, userComment));
+            List<Comment> nestedComments = getAllNestedComments(commentUuid);
+
+            // collect all images from comment and nested comments
+            List<String> allImages = getImagesFromComments(nestedComments);
+            if(userComment.getImage() != null)
+                allImages.add(userComment.getImage());
+
+            commentRepository.delete(userComment);
+            deleteAllImage(allImages);
         } catch (NotFoundException ex) {
             log.error("Failed to delete comment by id : {}", ex.getMessage(), ex);
             throw ex;
@@ -205,5 +213,23 @@ public class CommentServiceImpl implements CommentService {
     private Comment getParentComment(UUID parentCommentId) {
         if(parentCommentId == null) return null;
         return getById(parentCommentId);
+    }
+
+    private List<String> getImagesFromComments(List<Comment> nestedComments) {
+        List<String> images = new ArrayList<>();
+
+        for (Comment comment : nestedComments) {
+            if(comment.getImage() != null){
+                images.add(comment.getImage());
+            }
+        }
+
+        return images;
+    }
+
+    private void deleteAllImage(List<String> images) {
+        for(String image : images){
+            r2StorageService.deleteFile(image);
+        }
     }
 }

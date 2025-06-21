@@ -28,9 +28,6 @@ public class Comment extends BaseEntity {
     )
     private Comment parent;
 
-    @OneToMany(mappedBy = "parent", fetch = FetchType.LAZY,  cascade = CascadeType.ALL, orphanRemoval = true)
-    private List<Comment> children = new ArrayList<>();
-
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(
             name = "roadmap_id",
@@ -44,6 +41,12 @@ public class Comment extends BaseEntity {
             nullable = false
     )
     private User user;
+
+    @OneToMany(mappedBy = "parent", fetch = FetchType.LAZY,  cascade = CascadeType.ALL, orphanRemoval = true)
+    private List<Comment> children = new ArrayList<>();
+
+    @OneToMany(mappedBy = "comment", fetch = FetchType.LAZY,  cascade = CascadeType.ALL, orphanRemoval = true)
+    private List<Upvote> upvotes = new ArrayList<>();
 
     @PrePersist
     @PreUpdate
