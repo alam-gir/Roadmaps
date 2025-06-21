@@ -5,9 +5,11 @@ import com.roadmaps.Roadmaps.common.exceptions.ApiException;
 import com.roadmaps.Roadmaps.common.exceptions.NotFoundException;
 import com.roadmaps.Roadmaps.common.r2Storage.R2StorageService;
 import com.roadmaps.Roadmaps.modules.roadmap.dtos.RoadmapRequestDto;
+import com.roadmaps.Roadmaps.modules.roadmap.entity.Comment;
 import com.roadmaps.Roadmaps.modules.roadmap.entity.Roadmap;
 import com.roadmaps.Roadmaps.modules.roadmap.mapper.RoadmapMapper;
 import com.roadmaps.Roadmaps.modules.roadmap.repository.RoadmapRepository;
+import com.roadmaps.Roadmaps.modules.roadmap.service.CommentService;
 import com.roadmaps.Roadmaps.modules.roadmap.service.RoadmapService;
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
@@ -15,6 +17,8 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
 
+import java.util.ArrayList;
+import java.util.List;
 import java.util.UUID;
 
 @Service
@@ -26,6 +30,7 @@ public class RoadmapServiceImpl implements RoadmapService {
     private final RoadmapRepository   roadmapRepository;
     private final R2StorageService r2StorageService;
     private final RoadmapCacheService roadmapCacheService;
+    private final CommentService commentService;
 
     @Override
     public Roadmap getById(String id) {
@@ -87,6 +92,36 @@ public class RoadmapServiceImpl implements RoadmapService {
             deleteImageIfFailed(image);
             log.error("Error while create roadmap : {}",ex.getMessage(), ex);
             throw new ApiException("Failed to add roadmap");
+        }
+    }
+
+    @Override
+    public void deleteById(String id) {
+        try{
+            Roadmap roadmap = roadmapCacheService.getById(id);
+            deleteAllRelatedImageFromCloud(roadmap);
+            roadmapRepository.delete(roadmap);
+        } catch (NotFoundException ex){
+            throw ex;
+        } catch (Exception ex) {
+            log.error("Failed to delete roadmap : {}", ex.getMessage(), ex);
+            throw new ApiException("Failed to delete roadmap");
+        }
+    }
+
+    private void deleteAllRelatedImageFromCloud(Roadmap roadmap) {
+        List<String> allImage = commentService.getAllImagesFromComments(roadmap.getComments());
+
+        // add roadmap image
+        if(roadmap.getImage() != null && !roadmap.getImage().isEmpty())
+            allImage.add(roadmap.getImage());
+
+        // add commentsImages
+        List<Comment> comments = roadmap.getComments();
+        for(Comment comment : comments){
+            if(comment.getImage() != null && !comment.getImage().isEmpty())
+                allImage.add(comment.getImage());
+            commentService.c
         }
     }
 

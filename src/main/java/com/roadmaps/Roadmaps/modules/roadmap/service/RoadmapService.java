@@ -10,4 +10,6 @@ public interface RoadmapService {
     Roadmap getById(UUID id);
     Roadmap addRoadmap(RoadmapRequestDto roadmapDto);
 
+    void deleteById(String id);
+
 }

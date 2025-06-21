@@ -15,7 +15,6 @@ import com.roadmaps.Roadmaps.modules.user.service.UserService;
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
 
@@ -33,7 +32,6 @@ public class CommentServiceImpl implements CommentService {
     private final RoadmapMapper roadmapMapper;
     private final RoadmapService roadmapService;
     private final UserService userService;
-    private final ApplicationEventPublisher eventPublisher;
 
     @Override
     public Comment getById(String id) {
@@ -88,24 +86,16 @@ public class CommentServiceImpl implements CommentService {
         }
     }
 
-    public List<Comment> getAllNestedComments(UUID commentId) {
-        List<Comment> comments = new ArrayList<>();
-        collectNestedComments(commentId, comments);
-        return comments;
-    }
+    @Override
+    public List<String> getAllImagesFromComments(List<Comment> comments) {
+        List<Comment> allCommentIncludeNested = new ArrayList<>();
 
-    private void collectNestedComments(UUID commentId, List<Comment> comments) {
-        try{
-            List<Comment> children = commentRepository.getCommentsByParentId(commentId);
-
-            for(Comment childComment : children){
-                comments.add(childComment);
-                collectNestedComments(childComment.getId(), comments);
-            }
-        } catch (Exception e){
-            log.error("Failed to collect nested comments by comment id : {}", e.getMessage(), e);
-            throw new ApiException("Failed to collect nested comments. Try again!");
+        for (Comment comment : comments) {
+            allCommentIncludeNested.add(comment);
+            collectNestedComments(comment.getId(), allCommentIncludeNested);
         }
+
+        return getImagesFromComments(allCommentIncludeNested);
     }
 
     private Comment createComment(String userEmail, UUID roadmapId, UUID parentCommentId, CommentRequestDto commentDto) {
@@ -185,7 +175,27 @@ public class CommentServiceImpl implements CommentService {
         return getById(parentCommentId);
     }
 
-    private List<String> getImagesFromComments(List<Comment> nestedComments) {
+    public List<Comment> getAllNestedComments(UUID commentId) {
+        List<Comment> comments = new ArrayList<>();
+        collectNestedComments(commentId, comments);
+        return comments;
+    }
+
+    private void collectNestedComments(UUID commentId, List<Comment> comments) {
+        try{
+            List<Comment> children = commentRepository.getCommentsByParentId(commentId);
+
+            for(Comment childComment : children){
+                comments.add(childComment);
+                collectNestedComments(childComment.getId(), comments);
+            }
+        } catch (Exception e){
+            log.error("Failed to collect nested comments by comment id : {}", e.getMessage(), e);
+            throw new ApiException("Failed to collect nested comments. Try again!");
+        }
+    }
+
+    public List<String> getImagesFromComments(List<Comment> nestedComments) {
         List<String> images = new ArrayList<>();
 
         for (Comment comment : nestedComments) {
