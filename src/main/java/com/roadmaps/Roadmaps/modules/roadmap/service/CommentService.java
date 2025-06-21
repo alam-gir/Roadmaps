@@ -11,4 +11,5 @@ public interface CommentService {
 
     Comment addComment(String userEmail, UUID roadmapId, CommentRequestDto commentDto);
     Comment addCommentReply(String userEmail, UUID roadmapId, UUID parentCommentId, CommentRequestDto commentDto);
+    void deleteById(String commentId);
 }

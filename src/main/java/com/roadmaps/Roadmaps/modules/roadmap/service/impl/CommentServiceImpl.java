@@ -6,14 +6,17 @@ import com.roadmaps.Roadmaps.common.r2Storage.R2StorageService;
 import com.roadmaps.Roadmaps.modules.roadmap.dtos.CommentRequestDto;
 import com.roadmaps.Roadmaps.modules.roadmap.entity.Comment;
 import com.roadmaps.Roadmaps.modules.roadmap.entity.Roadmap;
+import com.roadmaps.Roadmaps.modules.roadmap.event.CommentDeleteEvent;
 import com.roadmaps.Roadmaps.modules.roadmap.mapper.RoadmapMapper;
 import com.roadmaps.Roadmaps.modules.roadmap.repository.CommentRepository;
 import com.roadmaps.Roadmaps.modules.roadmap.service.CommentService;
 import com.roadmaps.Roadmaps.modules.roadmap.service.RoadmapService;
 import com.roadmaps.Roadmaps.modules.user.enities.User;
 import com.roadmaps.Roadmaps.modules.user.service.UserService;
+import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
 
@@ -29,6 +32,7 @@ public class CommentServiceImpl implements CommentService {
     private final RoadmapMapper roadmapMapper;
     private final RoadmapService roadmapService;
     private final UserService userService;
+    private final ApplicationEventPublisher eventPublisher;
 
     @Override
     public Comment getById(String id) {
@@ -55,6 +59,25 @@ public class CommentServiceImpl implements CommentService {
     @Override
     public Comment addCommentReply(String userEmail, UUID roadmapId, UUID parentCommentId, CommentRequestDto commentDto) {
         return createComment(userEmail, roadmapId, parentCommentId, commentDto);
+    }
+
+    @Override
+    @Transactional
+    public void deleteById(String commentId) {
+        try{
+            UUID commentUuid = UUID.fromString(commentId);
+            Comment comment = commentRepository.findById(commentUuid)
+                    .orElseThrow(() -> new NotFoundException("Comment not found!"));
+
+            commentRepository.delete(comment);
+            eventPublisher.publishEvent(new CommentDeleteEvent(this, commentUuid));
+        } catch (NotFoundException ex) {
+            log.error("Failed to delete comment by id : {}", ex.getMessage(), ex);
+            throw ex;
+        } catch (Exception e) {
+            log.error("Failed to delete comment by id : {}", e.getMessage(), e);
+            throw new ApiException("Failed to delete comment. Try again!");
+        }
     }
 
     private Comment createComment(String userEmail, UUID roadmapId, UUID parentCommentId, CommentRequestDto commentDto) {
