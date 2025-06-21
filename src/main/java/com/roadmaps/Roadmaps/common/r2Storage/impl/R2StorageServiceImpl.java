@@ -12,6 +12,7 @@ import software.amazon.awssdk.services.s3.S3Client;
 import software.amazon.awssdk.services.s3.model.DeleteObjectRequest;
 import software.amazon.awssdk.services.s3.model.PutObjectRequest;
 
+import java.util.List;
 import java.util.UUID;
 
 @Service
@@ -66,6 +67,13 @@ public class R2StorageServiceImpl implements R2StorageService {
             throw new ApiException("Failed to delete file from cloud!");
         }
 
+    }
+
+    @Override
+    public void deleteAllFiles(List<String> images) {
+        for(String image : images){
+            deleteFile(image);
+        }
     }
 
     private String getUrlFromKey(String key) {

@@ -1,24 +1,23 @@
 package com.roadmaps.Roadmaps.modules.roadmap.mapper;
 
 import com.roadmaps.Roadmaps.modules.roadmap.dtos.RoadmapRequestDto;
-import com.roadmaps.Roadmaps.modules.roadmap.dtos.response.CommentReplyResponseDto;
-import com.roadmaps.Roadmaps.modules.roadmap.dtos.response.CommentResponseDto;
 import com.roadmaps.Roadmaps.modules.roadmap.dtos.response.RoadmapResponseDto;
-import com.roadmaps.Roadmaps.modules.roadmap.dtos.response.UpvoteResponseDto;
-import com.roadmaps.Roadmaps.modules.roadmap.entity.Comment;
+import com.roadmaps.Roadmaps.modules.roadmap.entity.Category;
 import com.roadmaps.Roadmaps.modules.roadmap.entity.Roadmap;
-import com.roadmaps.Roadmaps.modules.roadmap.entity.Upvote;
-import com.roadmaps.Roadmaps.modules.user.enities.User;
+import com.roadmaps.Roadmaps.modules.roadmap.enumeration.ROADMAP_STATUS;
+import org.springframework.data.domain.Page;
 import org.springframework.stereotype.Component;
 
 import java.util.List;
 
 @Component
 public class RoadmapMapper {
-    public Roadmap toEntity(RoadmapRequestDto roadmapDto, String image) {
+    public Roadmap toEntity(RoadmapRequestDto roadmapDto, Category category, ROADMAP_STATUS status, String image) {
         return Roadmap.builder()
                 .text(roadmapDto.getText())
                 .image(image)
+                .category(category)
+                .status(status)
                 .build();
     }
 
@@ -26,38 +25,18 @@ public class RoadmapMapper {
         return new RoadmapResponseDto(
                 roadmap.getId().toString(),
                 roadmap.getText(),
-                roadmap.getImage()
+                roadmap.getImage(),
+                roadmap.getCategory().getName(),
+                roadmap.getStatus(),
+                roadmap.getCreatedAt()
         );
     }
 
-    public List<UpvoteResponseDto> toUpvoteResponseDtoList(List<Upvote> upvotes) {
-        return upvotes.stream().map(upvote -> new UpvoteResponseDto(upvote.getUser().getName())).toList();
-    };
-
-    public Comment toCommentEntity(User user, Roadmap roadmap, Comment parent, String text, String image) {
-        return Comment.builder()
-                .user(user)
-                .roadmap(roadmap)
-                .parent(parent)
-                .text(text)
-                .image(image)
-                .build();
+    public List<RoadmapResponseDto> toResponseDtoList(List<Roadmap> roadmaps) {
+        return roadmaps.stream().map(this::toResponseDto).toList();
     }
 
-    public CommentResponseDto toCommentResponseDto(Comment comment) {
-        return new CommentResponseDto(
-                comment.getId().toString(),
-                comment.getText(),
-                comment.getImage()
-        );
-    }
-
-    public CommentReplyResponseDto toCommentReplyResponseDto(Comment comment, String parentId) {
-        return new CommentReplyResponseDto(
-                comment.getId().toString(),
-                parentId,
-                comment.getText(),
-                comment.getImage()
-        );
+    public Page<RoadmapResponseDto> toPagesResponseDtoList(Page<Roadmap> pagedRoadmaps) {
+        return pagedRoadmaps.map(this::toResponseDto);
     }
 }

@@ -7,6 +7,9 @@ import jakarta.persistence.*;
 import lombok.*;
 import lombok.experimental.SuperBuilder;
 
+import java.util.ArrayList;
+import java.util.List;
+
 @Entity
 @Table(name = "comments")
 @SuperBuilder
@@ -38,6 +41,12 @@ public class Comment extends BaseEntity {
             nullable = false
     )
     private User user;
+
+    @OneToMany(mappedBy = "parent", fetch = FetchType.LAZY,  cascade = CascadeType.ALL, orphanRemoval = true)
+    private List<Comment> children = new ArrayList<>();
+
+    @OneToMany(mappedBy = "comment", fetch = FetchType.LAZY,  cascade = CascadeType.ALL, orphanRemoval = true)
+    private List<Upvote> upvotes = new ArrayList<>();
 
     @PrePersist
     @PreUpdate
