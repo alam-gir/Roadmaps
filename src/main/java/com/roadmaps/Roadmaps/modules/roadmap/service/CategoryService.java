@@ -12,5 +12,7 @@ public interface CategoryService {
 
     Category add(CategoryRequestDto categoryDto);
 
+    Category update(String id, CategoryRequestDto dto);
+
     void delete(String id);
 }

@@ -62,6 +62,22 @@ public class CategoryServiceImpl implements CategoryService {
     }
 
     @Override
+    public Category update(String id, CategoryRequestDto dto) {
+        try {
+            validateCategoryNotExist(dto.getName());
+            Category oldCategory = getById(id);
+            oldCategory.setName(dto.getName());
+            return categoryRepository.save(oldCategory);
+        } catch (ApiException ex) {
+            log.error("Failed to add new category : {}", ex.getMessage(), ex);
+            throw ex;
+        } catch (Exception ex) {
+            log.error("Failed to add new category : {}", ex.getMessage(), ex);
+            throw new ApiException("Failed to add new category");
+        }
+    }
+
+    @Override
     public void delete(String id) {
         try{
             Category category = getById(id);
