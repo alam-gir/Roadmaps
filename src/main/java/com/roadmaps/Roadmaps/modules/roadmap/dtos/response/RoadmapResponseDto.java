@@ -10,5 +10,7 @@ public record RoadmapResponseDto (
         String image,
         String category,
         ROADMAP_STATUS status,
+        long totalUpvote,
+        long totalComment,
         LocalDateTime createdAt
 ){ }
