@@ -10,6 +10,7 @@ import com.roadmaps.Roadmaps.modules.roadmap.service.CommentService;
 import com.roadmaps.Roadmaps.modules.roadmap.service.UpvoteService;
 import com.roadmaps.Roadmaps.security.UserPrinciple;
 import lombok.RequiredArgsConstructor;
+import org.springframework.data.domain.Page;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
@@ -30,8 +31,13 @@ public class CommentController {
     private final CommentMapper commentMapper;
     private final UpvoteMapper upvoteMapper;
 
+    @GetMapping("/{id}/comments")
+    public ResponseEntity<Page<ApiResponse<?>>> getRootComments(@PathVariable String id){
+
+    }
+
+
     @PostMapping("/comments/{commentId}/upvotes")
-    @PreAuthorize("hasAnyRole('USER', 'ADMIN')")
     public ResponseEntity<ApiResponse<?>> upvoteToComment(Authentication authentication, @PathVariable String commentId) {
         UserPrinciple user =  (UserPrinciple) authentication.getPrincipal();
 
@@ -46,7 +52,6 @@ public class CommentController {
     }
 
     @PostMapping("/{roadmapId}/comments")
-    @PreAuthorize("hasAnyRole('USER', 'ADMIN')")
     public ResponseEntity<ApiResponse<?>> commentToRoadmap(Authentication authentication, @PathVariable String roadmapId, @ModelAttribute CommentRequestDto commentDto) {
         UserPrinciple user =  (UserPrinciple) authentication.getPrincipal();
 
@@ -61,7 +66,6 @@ public class CommentController {
     }
 
     @PostMapping("/{roadmapId}/comments/{commentId}/comments")
-    @PreAuthorize("hasAnyRole('USER', 'ADMIN')")
     public ResponseEntity<ApiResponse<?>> replyToRoadmapComment(Authentication authentication, @PathVariable String roadmapId, @PathVariable String commentId, @ModelAttribute CommentRequestDto commentDto) {
         UserPrinciple user =  (UserPrinciple) authentication.getPrincipal();
 
@@ -76,7 +80,6 @@ public class CommentController {
     }
 
     @DeleteMapping("/comments/{commentId}")
-    @PreAuthorize("hasAnyRole('USER', 'ADMIN')")
     public ResponseEntity<?> deleteComment(Authentication authentication, @PathVariable String commentId) {
         UserPrinciple user =  (UserPrinciple) authentication.getPrincipal();
 

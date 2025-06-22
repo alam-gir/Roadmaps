@@ -20,19 +20,36 @@ public class CommentMapper {
     }
 
     public CommentResponseDto toCommentResponseDto(Comment comment) {
+        long totalUpvote = comment.getUpvotes() != null ? comment.getUpvotes().size() : 0;
+        long totalReplies = comment.getChildren() != null ? comment.getChildren().size() : 0;
+
         return new CommentResponseDto(
                 comment.getId().toString(),
+                comment.getUser().getId().toString(),
+                comment.getUser().getName(),
                 comment.getText(),
-                comment.getImage()
+                comment.getImage(),
+                totalUpvote,
+                totalReplies,
+                comment.getCreatedAt()
         );
     }
 
     public CommentReplyResponseDto toCommentReplyResponseDto(Comment comment, String parentId) {
+        long totalUpvote = comment.getUpvotes() != null ? comment.getUpvotes().size() : 0;
+        long totalReplies = comment.getChildren() != null ? comment.getChildren().size() : 0;
+
         return new CommentReplyResponseDto(
                 comment.getId().toString(),
-                parentId,
+                comment.getUser().getId().toString(),
+                comment.getUser().getName(),
+                comment.getParent().getId().toString(),
+                comment.getParent().getUser().getName(),
                 comment.getText(),
-                comment.getImage()
+                comment.getImage(),
+                totalUpvote,
+                totalReplies,
+                comment.getCreatedAt()
         );
     }
 }

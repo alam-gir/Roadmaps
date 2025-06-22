@@ -7,7 +7,6 @@ import com.roadmaps.Roadmaps.modules.roadmap.dtos.CommentRequestDto;
 import com.roadmaps.Roadmaps.modules.roadmap.entity.Comment;
 import com.roadmaps.Roadmaps.modules.roadmap.entity.Roadmap;
 import com.roadmaps.Roadmaps.modules.roadmap.mapper.CommentMapper;
-import com.roadmaps.Roadmaps.modules.roadmap.mapper.RoadmapMapper;
 import com.roadmaps.Roadmaps.modules.roadmap.repository.CommentRepository;
 import com.roadmaps.Roadmaps.modules.roadmap.repository.RoadmapRepository;
 import com.roadmaps.Roadmaps.modules.roadmap.service.CommentService;
@@ -16,6 +15,8 @@ import com.roadmaps.Roadmaps.modules.user.service.UserService;
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
 
@@ -30,10 +31,37 @@ public class CommentServiceImpl implements CommentService {
 
     private final CommentRepository commentRepository;
     private final R2StorageService r2StorageService;
-    private final RoadmapMapper roadmapMapper;
     private final CommentMapper commentMapper;
     private final UserService userService;
     private final RoadmapRepository roadmapRepository;
+
+    @Override
+    public Page<Comment> getRootCommentsByRoadmapId(String roadmapId, Pageable pageable) {
+        try {
+            Roadmap roadmap = getRoadmap(UUID.fromString(roadmapId));
+            return commentRepository.findAllByRoadmapAndParentIsEmpty(roadmap, pageable);
+        } catch (NotFoundException | ApiException e) {
+            log.warn("Failed to load comments of roadmap: {}", e.getMessage(), e);
+            throw e;
+        } catch (Exception e){
+            log.error("Failed to load comments of roadmap: {}", e.getMessage(), e);
+            throw new ApiException("Failed to load comments of roadmap");
+        }
+    }
+
+    @Override
+    public Page<Comment> getRepliesByCommentId(String commentId, Pageable pageable) {
+        try {
+            Comment comment = getById(UUID.fromString(commentId));
+            return commentRepository.findAllByParent(comment, pageable);
+        } catch (NotFoundException | ApiException e) {
+            log.warn("Failed to load comments of roadmap: {}", e.getMessage(), e);
+            throw e;
+        } catch (Exception e){
+            log.error("Failed to load comments of roadmap: {}", e.getMessage(), e);
+            throw new ApiException("Failed to load comments of roadmap");
+        }
+    }
 
     @Override
     public Comment getById(String id) {
@@ -108,8 +136,7 @@ public class CommentServiceImpl implements CommentService {
 
             // get all the required data
             User user = userService.getUserByEmail(userEmail);
-            Roadmap roadmap = roadmapRepository.findById(roadmapId)
-                    .orElseThrow(() -> new NotFoundException("Roadmap not found!"));
+            Roadmap roadmap = getRoadmap(roadmapId);
 
             Comment parentComment = getParentComment(parentCommentId);
             image = uploadImage(commentDto.getImage(), "roadmap_comment_images");
@@ -127,6 +154,11 @@ public class CommentServiceImpl implements CommentService {
             log.error("Error while create roadmap : {}",ex.getMessage(), ex);
             throw new ApiException("Failed to add roadmap");
         }
+    }
+
+    private Roadmap getRoadmap(UUID roadmapId) {
+        return roadmapRepository.findById(roadmapId)
+                .orElseThrow(() -> new NotFoundException("Roadmap not found!"));
     }
 
     private Comment getCommentById(UUID id) {
