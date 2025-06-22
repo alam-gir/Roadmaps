@@ -22,12 +22,17 @@ public class RoadmapMapper {
     }
 
     public RoadmapResponseDto toResponseDto(Roadmap roadmap) {
+        long totalUpvote = roadmap.getUpvotes() != null ? roadmap.getUpvotes().size() : 0;
+        long totalComment = roadmap.getComments() != null ? roadmap.getComments().size() : 0;
+
         return new RoadmapResponseDto(
                 roadmap.getId().toString(),
                 roadmap.getText(),
                 roadmap.getImage(),
                 roadmap.getCategory().getName(),
                 roadmap.getStatus(),
+                totalUpvote,
+                totalComment,
                 roadmap.getCreatedAt()
         );
     }
