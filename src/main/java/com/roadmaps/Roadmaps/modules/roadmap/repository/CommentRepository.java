@@ -15,7 +15,7 @@ public interface CommentRepository extends JpaRepository<Comment, UUID> {
 
     Optional<Comment> findByIdAndUser_Email(UUID commentUuid, String email);
 
-    Page<Comment> findAllByRoadmapAndParentIsEmpty(Roadmap roadmap, Pageable pageable);
-
     Page<Comment> findAllByParent(Comment comment, Pageable pageable);
+
+    Page<Comment> findAllByRoadmapAndParentIsNull(Roadmap roadmap, Pageable pageable);
 }

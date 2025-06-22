@@ -39,7 +39,7 @@ public class CommentServiceImpl implements CommentService {
     public Page<Comment> getRootCommentsByRoadmapId(String roadmapId, Pageable pageable) {
         try {
             Roadmap roadmap = getRoadmap(UUID.fromString(roadmapId));
-            return commentRepository.findAllByRoadmapAndParentIsEmpty(roadmap, pageable);
+            return commentRepository.findAllByRoadmapAndParentIsNull(roadmap, pageable);
         } catch (NotFoundException | ApiException e) {
             log.warn("Failed to load comments of roadmap: {}", e.getMessage(), e);
             throw e;
@@ -144,15 +144,15 @@ public class CommentServiceImpl implements CommentService {
             Comment newComment = commentMapper.toCommentEntity(user, roadmap, parentComment, commentDto.getText(), image);
 
             return commentRepository.save(newComment);
-        } catch (ApiException ex) {
+        } catch (ApiException | NotFoundException ex) {
             deleteImageIfFailed(image);
-            log.error("Failed to add roadmap : {}", ex.getMessage(), ex);
+            log.warn("Failed to reply of comment : {}", ex.getMessage(), ex);
             throw ex;
         }
         catch (Exception ex) {
             deleteImageIfFailed(image);
-            log.error("Error while create roadmap : {}",ex.getMessage(), ex);
-            throw new ApiException("Failed to add roadmap");
+            log.error("Failed to reply of comment : {}",ex.getMessage(), ex);
+            throw new ApiException("Failed to reply of comment");
         }
     }
 

@@ -35,7 +35,7 @@ public class CommentMapper {
         );
     }
 
-    public CommentReplyResponseDto toCommentReplyResponseDto(Comment comment, String parentId) {
+    public CommentReplyResponseDto toCommentReplyResponseDto(Comment comment) {
         long totalUpvote = comment.getUpvotes() != null ? comment.getUpvotes().size() : 0;
         long totalReplies = comment.getChildren() != null ? comment.getChildren().size() : 0;
 
