@@ -108,6 +108,21 @@ public class GlobalException {
         return ResponseEntity.status(HttpStatus.FORBIDDEN).body(response);
     }
 
+    @ExceptionHandler(DuplicateEmailException.class)
+    public ResponseEntity<ApiResponse<Void>> handleDuplicateEmailException(
+            DuplicateEmailException ex, HttpServletRequest request
+    ) {
+        log.error("Data integrity error for requestt : {}", request.getRequestURI());
+
+        ApiResponse<Void> response = ApiResponse.error(
+                ex.getMessage(),
+                "DATABASE_ERROR",
+                request.getRequestURI()
+        );
+
+        return ResponseEntity.status(HttpStatus.CONFLICT).body(response);
+    }
+
     @ExceptionHandler(DataIntegrityViolationException.class)
     public ResponseEntity<ApiResponse<Void>> handleDataIntegrityViolationException(
             DataIntegrityViolationException ex, HttpServletRequest request
